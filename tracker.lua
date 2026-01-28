@@ -2,7 +2,7 @@
 
 -- ⚙️ CONFIGURATION
 local SETTINGS = {
-    WebhookURL = "YOUR_WEBHOOK_URL_HERE",  -- ⚠️ PASTE YOUR WEBHOOK LINK HERE
+    WebhookURL = "https://hooks.hyra.io/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",  -- ⚠️ PASTE YOUR WEBHOOK LINK HERE
     StopOnMoon = true,        -- Stop hopping if Full Moon is found?
     StopOnFrozen = true,      -- Stop hopping if Frozen Island is found?
     PingRole = "@everyone",   -- "@everyone", "@here", or "None"
