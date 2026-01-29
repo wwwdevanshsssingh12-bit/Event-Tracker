@@ -103,6 +103,7 @@ end
 -- 🚀 MAIN EXECUTION
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
+    print("✨ Event Tracker Started. Scanning in " .. CONFIG.ScanDelay[2] .. "s...") 
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2])) -- Wait for map load
 
     -- 1. Check for Moon
