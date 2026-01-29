@@ -1,8 +1,8 @@
-mu-- [[ 🚀 Event Tracker: Continuous Scanner Mode 🚀 ]] --
+-- [[ 🚀 Event Tracker: Continuous Scanner Mode 🚀 ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",   -- ⚠️ PASTE YOUR HYRA LINK HERE
+    WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole = "@everyone",    -- Role to ping
     ScanDelay = {4, 6},        -- Wait time before scanning (seconds)
     EmbedColor = 16766720,     -- Gold Color
