@@ -1,13 +1,13 @@
--- [[ 🚀 Event Tracker: Continuous Scanner Mode 🚀 ]] --
+-- [[ 🚀 Event Tracker: FORCE RUN MODE 🚀 ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
+    -- ⚠️ PASTE YOUR LEWISAKURA LINK HERE:
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole = "@everyone",    -- Role to ping
     ScanDelay = {4, 6},        -- Wait time before scanning (seconds)
     EmbedColor = 16766720,     -- Gold Color
-    SafeSlots = 1,             -- Minimum empty slots needed to join
-    ThirdSeaID = 7449423635    -- 3rd Sea ID
+    SafeSlots = 1              -- Minimum empty slots needed to join
 }
 
 -- 🔄 SERVICES
@@ -15,13 +15,6 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-
--- 🛑 STRICT 3RD SEA CHECK
-if game.PlaceId ~= CONFIG.ThirdSeaID then
-    warn("❌ Not in Third Sea! Script Stopped.")
-    return 
-end
 
 -- 🛡️ ERROR-PROOF REQUESTS
 local function safeRequest(url, method, body)
@@ -103,7 +96,11 @@ end
 -- 🚀 MAIN EXECUTION
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
-    print("✨ Event Tracker Started. Scanning in " .. CONFIG.ScanDelay[2] .. "s...") 
+    
+    -- Print ID just so we know for next time
+    print("📍 Current Place ID: " .. game.PlaceId)
+    print("✨ Event Tracker Started. Scanning...") 
+    
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2])) -- Wait for map load
 
     -- 1. Check for Moon
