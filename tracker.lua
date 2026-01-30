@@ -324,15 +324,15 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
 
     local payload = {
-        ["username"] = "Blox || Devansh Tracker",
-        ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
+        ["username"] = "Event Tracker",
+        ["avatar_url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697e0810&is=697cb690&hm=148983120f5c93dae556b4a85f69e073692543227c8b4f956ee02dbddbc44b37&",
         ["content"] = CONFIG.PingRole, 
         ["embeds"] = {{
             ["title"] = titleText,
             ["color"] = color,
-            ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
+            ["thumbnail"] = { ["url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697e0810&is=697cb690&hm=148983120f5c93dae556b4a85f69e073692543227c8b4f956ee02dbddbc44b37&" },
             ["fields"] = fields,
-            ["footer"] = { ["text"] = "Devansh Event Tracker | Timekeeper Mode" },
+            ["footer"] = { ["text"] = "Devansh  || Event Tracker" },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
