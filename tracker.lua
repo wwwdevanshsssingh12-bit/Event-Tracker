@@ -1,10 +1,10 @@
--- [[ 🚀 GOD MODE: TIMEKEEPER EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: TIMEKEEPER EDITION (FIXED) 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q",
-    PingRole = "@everyone", -- Pings for EVERY event
+    PingRole = "@everyone", 
     ScanDelay = {2, 4},       
     SafeSlots = 1,
     MinAIConfidence = 75,     
@@ -21,7 +21,7 @@ local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
--- 🎨 GUI SETUP (Rainbow, Movable, Professional)
+-- 🎨 GUI SETUP
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local StatusLabel = Instance.new("TextLabel")
@@ -38,13 +38,13 @@ ScreenGui.Parent = CoreGui
 -- Main Box
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) -- Premium Dark
-MainFrame.Position = UDim2.new(1, -280, 1, -200) -- Bottom Right
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) 
+MainFrame.Position = UDim2.new(1, -280, 1, -200) 
 MainFrame.Size = UDim2.new(0, 260, 0, 190)
 MainFrame.BorderSizePixel = 3
-MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0) 
 MainFrame.Active = true
-MainFrame.Draggable = true -- ✅ MOVABLE
+MainFrame.Draggable = true 
 
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 8)
@@ -69,7 +69,7 @@ ConfidenceLabel.Position = UDim2.new(0, 10, 0, 30)
 ConfidenceLabel.Size = UDim2.new(0.5, 0, 0, 20)
 ConfidenceLabel.Font = Enum.Font.Code
 ConfidenceLabel.Text = "Prob: 0%"
-ConfidenceLabel.TextColor3 = Color3.fromRGB(0, 255, 120) -- Neon Green
+ConfidenceLabel.TextColor3 = Color3.fromRGB(0, 255, 120) 
 ConfidenceLabel.TextSize = 12
 ConfidenceLabel.TextXAlignment = Enum.TextXAlignment.Left
 
@@ -81,7 +81,7 @@ AgeLabel.Position = UDim2.new(0.5, -10, 0, 30)
 AgeLabel.Size = UDim2.new(0.5, 0, 0, 20)
 AgeLabel.Font = Enum.Font.Code
 AgeLabel.Text = "Age: 00m"
-AgeLabel.TextColor3 = Color3.fromRGB(255, 200, 50) -- Orange
+AgeLabel.TextColor3 = Color3.fromRGB(255, 200, 50) 
 AgeLabel.TextSize = 12
 AgeLabel.TextXAlignment = Enum.TextXAlignment.Right
 
@@ -177,13 +177,12 @@ local function formatAge(seconds)
     return string.format("%dh %02dm", hours, minutes)
 end
 
--- ⏳ EXPIRATION CALCULATOR (NEW)
+-- ⏳ EXPIRATION CALCULATOR
 local function getEventStatus()
     local currentTime = Lighting.ClockTime
     local status = "🟢 Unknown"
     local timeLeft = "Unknown"
     
-    -- Night Cycle is approx 18:00 to 05:00
     if currentTime >= 18 or currentTime < 5 then
         local hoursLeft = 0
         if currentTime >= 18 then
@@ -192,9 +191,7 @@ local function getEventStatus()
             hoursLeft = 5 - currentTime
         end
         
-        -- Blox Fruits: 1 Game Hour is approx 45-60 seconds real time
-        -- We estimate roughly based on game hours remaining
-        local minutesRemaining = math.floor(hoursLeft * 1.5) -- Rough real-time estimate
+        local minutesRemaining = math.floor(hoursLeft * 1.5)
         
         if hoursLeft > 4 then
             status = "🟢 FRESH (Just Started)"
@@ -203,7 +200,7 @@ local function getEventStatus()
         elseif hoursLeft > 0.5 then
             status = "🟠 ENDING SOON"
         else
-            status = "🔴 CRITICAL (Expiring Now!)"
+            status = "🔴 CRITICAL (Expiring!)"
         end
         timeLeft = "~" .. minutesRemaining .. " mins left"
     else
@@ -220,6 +217,7 @@ local function calculateAI()
     local reasons = {}
     local ageSeconds = getServerAge()
     
+    -- 1. SERVER AGE
     if ageSeconds > 3200 and ageSeconds < 5000 then 
         score = score + 40
         table.insert(reasons, "Prime Time")
@@ -228,6 +226,7 @@ local function calculateAI()
         table.insert(reasons, "Moon in ~15m")
     end
 
+    -- 2. LIGHTING
     if Lighting.ClockTime > 20 or Lighting.ClockTime < 5 then
         score = score + 10
         if Lighting.Brightness > 0.6 then
@@ -236,6 +235,7 @@ local function calculateAI()
         end
     end
 
+    -- 3. BEHAVIOR
     local seaCluster = 0
     local templeCluster = 0
     for _, p in pairs(Players:GetPlayers()) do
@@ -285,11 +285,9 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     UpdateGUI("💎 JACKPOT FOUND!")
     local jobId, placeId = game.JobId, game.PlaceId
     local age = formatAge(getServerAge())
-    local status, timeLeft, gameHour = getEventStatus() -- GET TIME STATUS
+    local status, timeLeft, gameHour = getEventStatus()
     
-    -- Mobile Code
     local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..placeId..', "'..jobId..'", game.Players.LocalPlayer)'
-
     local titleText = "🌟 EVENT DETECTED"
     local color = 16766720 -- Gold
     
@@ -301,7 +299,6 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
         color = 16711680 -- Red Hype
     end
 
-    -- Warning Color for Expiring Events
     if string.find(status, "CRITICAL") or string.find(status, "EXPIRED") then
         color = 10038562 -- Dark Red (Warning)
         titleText = "⚠️ EXPIRING EVENT FOUND"
@@ -313,7 +310,6 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
         for _, ev in pairs(eventsList) do
             table.insert(fields, {["name"] = "💎 FOUND:", ["value"] = "**" .. ev.name .. "** (" .. ev.method .. ")", ["inline"] = false})
         end
-        -- ADD TIMER FIELD
         table.insert(fields, {["name"] = "⏳ STATUS / TIMER", ["value"] = status .. "\n🕐 **Time Left:** " .. timeLeft .. "\n🕛 **Game Time:** " .. math.floor(gameHour) .. ":00", ["inline"] = false})
     else
         table.insert(fields, {["name"] = "🔮 PREDICTION:", ["value"] = "**" .. aiReason .. "** (Confidence: " .. aiScore .. "%)", ["inline"] = false})
@@ -401,93 +397,6 @@ local function init()
         task.wait(2)
     end
     
-    serverHop()
-end
-
-init()
-"**", ["inline"] = true},
-                {["name"] = "🛡️ Method", ["value"] = "`" .. method .. "`", ["inline"] = true},
-                {["name"] = "⏳ Server Age", ["value"] = "**" .. age .. "**", ["inline"] = true},
-                {["name"] = "🧠 AI Analysis", ["value"] = "```" .. (extraInfo or "N/A") .. "```", ["inline"] = false},
-                {["name"] = "🚀 Direct Link", ["value"] = "[Join Server](https://www.roblox.com/games/"..placeId.."?jobId="..jobId..")", ["inline"] = false},
-                {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false}
-            },
-            ["footer"] = { ["text"] = "God AI by Devansh" },
-            ["timestamp"] = DateTime.now():ToIsoDate()
-        }}
-    }
-    safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
-end
-
--- 🐇 HOPPER
-local function serverHop()
-    UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
-    Log("Hopping to next server...")
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"
-    local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
-    
-    if success and result and result.data then
-        for _, server in pairs(result.data) do
-            if server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
-                return
-            end
-        end
-    end
-    TeleportService:Teleport(game.PlaceId)
-end
-
--- 🚀 MAIN EXECUTION
-local function init()
-    if not game:IsLoaded() then game.Loaded:Wait() end
-    
-    local ageFormatted = formatAge(getServerAge())
-    UpdateGUI("🔍 ORACLE SCANNING...", "0%", ageFormatted)
-    Log("Server Age: " .. ageFormatted)
-    
-    task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
-
-    -- 1. HARD CHECK (The 100% Method)
-    local event, method, conf = checkHardEvents()
-    if event then
-        sendNotification(event, method, conf, "Hard Confirmation")
-        task.wait(2)
-        serverHop()
-        return -- Exit
-    end
-
-    -- 2. AI PREDICTION (The God Mode Method)
-    local aiScore, aiReasons = calculateAI()
-    UpdateGUI("🧠 ANALYZING DATA...", aiScore, ageFormatted)
-    Log("AI Score: " .. aiScore .. "% -> " .. aiReasons)
-
-    -- 3. DECISION MAKING
-    if aiScore >= CONFIG.HoldConfidence then
-        -- SCENARIO A: It is almost certainly happening. HOLD.
-        Log("🛑 AI is 90%+ sure! Holding server for visual confirm...")
-        UpdateGUI("🛑 HOLDING FOR EVENT...", aiScore, ageFormatted)
-        task.wait(5) -- Wait to see if moon spawns in next few seconds
-        
-        -- Re-check
-        event, method, conf = checkHardEvents()
-        if event then
-            sendNotification(event, method, conf, "Confirmed after Hold")
-            task.wait(2)
-        else
-            -- If still nothing, report HIGH prediction then hop
-            sendNotification("⚠️ HIGH PROBABILITY MOON", "AI Algorithm", aiScore, aiReasons)
-            task.wait(2)
-        end
-
-    elseif aiScore >= CONFIG.MinAIConfidence then
-        -- SCENARIO B: Moon is coming soon (e.g. 15 mins away). REPORT & HOP.
-        -- User asked: "Send data like when it's coming... then server hops"
-        Log("⚠️ Future Prediction found. Reporting then hopping.")
-        sendNotification("🔮 PREDICTION: " .. aiReasons, "AI Forecasting", aiScore, "Server Age: " .. ageFormatted)
-        task.wait(2)
-    end
-    
-    -- Always hop at the end
     serverHop()
 end
 
