@@ -1,14 +1,13 @@
--- [[ 📊 Event Tracker: Gold Edition (With 3-Hour Stats) 📊 ]] --
+-- [[ 🚀 Event Tracker: Rainbow Speed Edition 🚀 ]] --
+-- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    -- ⚠️ PASTE YOUR LEWISAKURA LINK HERE:
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole = "@everyone", 
-    ScanDelay = {4, 6},
-    EmbedColor = 16766720, -- Gold
+    ScanDelay = {3, 5}, -- Reduced for speed
     SafeSlots = 1,
-    ReportInterval = 10800 -- 3 Hours (in seconds)
+    ReportInterval = 10800 -- 3 Hours
 }
 
 -- 🔄 SERVICES
@@ -16,119 +15,204 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 local Lighting = game:GetService("Lighting")
 local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 
--- 📂 FILE SYSTEM (PERSISTENT STATS)
+-- 🎨 GUI SETUP (Movable & Rainbow)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local StatusLabel = Instance.new("TextLabel")
+local ConsoleFrame = Instance.new("ScrollingFrame")
+local ConsoleText = Instance.new("TextLabel")
+local Footer = Instance.new("TextLabel")
+local UICorner = Instance.new("UICorner")
+local UIGradient = Instance.new("UIGradient") -- For Rainbow Border
+
+ScreenGui.Name = "EventTrackerGUI"
+ScreenGui.Parent = CoreGui
+
+-- Main Box
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.Position = UDim2.new(1, -260, 1, -160) -- Bottom Right Start
+MainFrame.Size = UDim2.new(0, 250, 0, 150)
+MainFrame.BorderSizePixel = 3 -- Thicker for rainbow
+MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- Base color
+MainFrame.Active = true
+MainFrame.Draggable = true -- ✅ MAKES IT MOVABLE
+
+-- Round Corners
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 8)
+Corner.Parent = MainFrame
+
+-- Status Text
+StatusLabel.Name = "Status"
+StatusLabel.Parent = MainFrame
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0, 0, 0, 5)
+StatusLabel.Size = UDim2.new(1, 0, 0, 30)
+StatusLabel.Font = Enum.Font.GothamBlack
+StatusLabel.Text = "⚡ SPEED SCANNING..."
+StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+StatusLabel.TextSize = 18
+
+-- Console Area
+ConsoleFrame.Name = "Console"
+ConsoleFrame.Parent = MainFrame
+ConsoleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ConsoleFrame.BorderSizePixel = 0
+ConsoleFrame.Position = UDim2.new(0, 10, 0, 40)
+ConsoleFrame.Size = UDim2.new(1, -20, 0, 85)
+ConsoleFrame.ScrollBarThickness = 2
+
+ConsoleText.Name = "Log"
+ConsoleText.Parent = ConsoleFrame
+ConsoleText.BackgroundTransparency = 1
+ConsoleText.Size = UDim2.new(1, 0, 1, 0)
+ConsoleText.Font = Enum.Font.Code
+ConsoleText.Text = "Initializing..."
+ConsoleText.TextColor3 = Color3.fromRGB(180, 180, 180)
+ConsoleText.TextSize = 11
+ConsoleText.TextXAlignment = Enum.TextXAlignment.Left
+ConsoleText.TextYAlignment = Enum.TextYAlignment.Top
+ConsoleText.TextWrapped = true
+
+-- Footer
+Footer.Name = "Credit"
+Footer.Parent = MainFrame
+Footer.BackgroundTransparency = 1
+Footer.Position = UDim2.new(0, 0, 1, -20)
+Footer.Size = UDim2.new(1, 0, 0, 20)
+Footer.Font = Enum.Font.GothamBold
+Footer.Text = "- made by devansh -"
+Footer.TextColor3 = Color3.fromRGB(255, 255, 255)
+Footer.TextSize = 10
+
+-- 🌈 RAINBOW ANIMATION SCRIPT
+task.spawn(function()
+    local hue = 0
+    while true do
+        hue = hue + 0.01
+        if hue > 1 then hue = 0 end
+        local rainbow = Color3.fromHSV(hue, 1, 1)
+        
+        -- Apply Rainbow to Border, Status, and Footer
+        MainFrame.BorderColor3 = rainbow
+        StatusLabel.TextColor3 = rainbow
+        Footer.TextColor3 = rainbow
+        
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+-- 📟 LOGGING
+local function Log(text)
+    local timestamp = os.date("%X")
+    local newLog = "[" .. timestamp .. "] " .. text
+    ConsoleText.Text = newLog .. "\n" .. ConsoleText.Text
+    print(newLog)
+end
+
+local function UpdateStatus(text)
+    StatusLabel.Text = text
+end
+
+-- 📂 STATS
 local FileName = "BloxTrackerStats.json"
-
 local function loadStats()
     if isfile and isfile(FileName) then
         local success, data = pcall(function() return HttpService:JSONDecode(readfile(FileName)) end)
         if success and data then return data end
     end
-    -- Default Data if file doesn't exist
     return { TotalScanned = 0, LastReport = os.time(), StartTime = os.time() }
 end
-
 local function saveStats(data)
-    if writefile then
-        pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end)
-    end
+    if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end) end
 end
 
--- Update Stats immediately upon load
 local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
+Log("Servers Scanned (Session): " .. currentStats.TotalScanned)
 
--- 🛡️ ERROR-PROOF REQUESTS
+-- 🛡️ WEBHOOK
 local function safeRequest(url, method, body)
     local requestFunc = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
     if not requestFunc then return end
     pcall(function()
-        requestFunc({
-            Url = url,
-            Method = method,
-            Headers = {["Content-Type"] = "application/json"},
-            Body = body
-        })
+        requestFunc({Url = url, Method = method, Headers = {["Content-Type"] = "application/json"}, Body = body})
     end)
 end
 
--- 📊 SEND STATUS REPORT (Every 3 Hours)
+-- 📊 3-HOUR REPORT
 local function checkStatusReport()
     local timeDiff = os.time() - currentStats.LastReport
-    
     if timeDiff >= CONFIG.ReportInterval then
-        local uptimeSeconds = os.time() - currentStats.StartTime
-        local uptimeHours = string.format("%.1f", uptimeSeconds / 3600)
-
+        Log("Sending Report...")
+        local uptimeHours = string.format("%.1f", (os.time() - currentStats.StartTime) / 3600)
         local payload = {
             ["username"] = "Tracker Status",
-            ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
             ["embeds"] = {{
-                ["title"] = "📈 Periodic System Report",
-                ["description"] = "The automation system is active and running efficiently.",
-                ["color"] = 3447003, -- Blue for Status
+                ["title"] = "📈 System Report",
+                ["description"] = "Active & Running. - made by devansh",
+                ["color"] = 3447003,
                 ["fields"] = {
-                    {["name"] = "📡 Servers Scanned (Last 3h)", ["value"] = "```" .. currentStats.TotalScanned .. " Servers```", ["inline"] = true},
-                    {["name"] = "⏱️ Total Uptime", ["value"] = "```" .. uptimeHours .. " Hours```", ["inline"] = true},
-                    {["name"] = "🟢 Current Status", ["value"] = "Scanning Third Sea...", ["inline"] = false}
+                    {["name"] = "📡 Scanned (3h)", ["value"] = "```" .. currentStats.TotalScanned .. "```", ["inline"] = true},
+                    {["name"] = "⏱️ Uptime", ["value"] = "```" .. uptimeHours .. "h```", ["inline"] = true}
                 },
-                ["footer"] = { ["text"] = "Auto-Report • " .. os.date("%X") },
                 ["timestamp"] = DateTime.now():ToIsoDate()
             }}
         }
-        
         safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
-        
-        -- Reset Counter but keep StartTime
         currentStats.TotalScanned = 0
         currentStats.LastReport = os.time()
         saveStats(currentStats)
     end
 end
 
--- 🕵️ EVENT DETECTION
+-- 🕵️ DETECTION
 local function checkFullMoon()
     if Lighting:GetAttribute("IsFullMoon") then return true end
     if Lighting.Sky and Lighting.Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then return true end
     return false
 end
-
 local function checkFrozenIsland()
     return Workspace.Map:FindFirstChild("Frozen Island") or Workspace.Map:FindFirstChild("FrozenDimension")
 end
 
--- 📨 FOUND EVENT NOTIFICATION
+-- 📨 NOTIFY
 local function sendNotification(eventName)
-    local jobId = game.JobId
-    local placeId = game.PlaceId
-    local joinLink = "https://www.roblox.com/games/" .. placeId .. "?jobId=" .. jobId
-
+    UpdateStatus("EVENT FOUND!")
+    local jobId, placeId = game.JobId, game.PlaceId
     local payload = {
         ["username"] = "Blox || Event Scanner",
         ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
         ["content"] = (CONFIG.PingRole ~= "None" and CONFIG.PingRole or ""),
         ["embeds"] = {{
-            ["title"] = "🚀 Event Passed & Logged",
-            ["description"] = "A **" .. eventName .. "** was detected!\nBot is **moving to next server** immediately.",
-            ["color"] = CONFIG.EmbedColor,
+            ["title"] = "🚀 Event Detected!",
+            ["description"] = "**" .. eventName .. "** found! Moving to next...",
+            ["color"] = 16766720,
             ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
             ["fields"] = {
                 {["name"] = "💎 Event", ["value"] = "**" .. eventName .. "**", ["inline"] = true},
-                {["name"] = "🚀 Link", ["value"] = "[Join Server](" .. joinLink .. ")", ["inline"] = true},
+                {["name"] = "🚀 Link", ["value"] = "[Join Server](https://www.roblox.com/games/"..placeId.."?jobId="..jobId..")", ["inline"] = true},
                 {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false}
             },
-            ["footer"] = { ["text"] = "Scanner • Auto-Hopping..." },
+            ["footer"] = { ["text"] = "Made by Devansh" },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 SERVER HOPPER
+-- 🐇 SPEED HOPPER
 local function serverHop()
-    print("🔄 Hopping...")
+    UpdateStatus("HOPPING...")
+    Log("Hopping...")
     local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"
     local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
     
@@ -146,19 +230,20 @@ end
 -- 🚀 MAIN
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
-    
-    -- Check if we need to send the 3-hour report
     checkStatusReport()
-
-    print("✨ Event Tracker Started.") 
+    
+    Log("Map Loading (" .. CONFIG.ScanDelay[2] .. "s)...")
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
 
     if checkFullMoon() then
         sendNotification("🌕 FULL MOON")
     elseif checkFrozenIsland() then
         sendNotification("❄️ FROZEN ISLAND")
+    else
+        Log("❌ Nothing found.")
     end
-
+    
+    -- INSTANT HOP
     serverHop()
 end
 
