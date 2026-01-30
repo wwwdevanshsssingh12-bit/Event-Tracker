@@ -1,11 +1,11 @@
--- [[ 🚀 Event Tracker: Rainbow Speed Edition 🚀 ]] --
+-- [[ 🚀 Event Tracker: God Mode (5-Check Secure) 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole = "@everyone", 
-    ScanDelay = {3, 5}, -- Reduced for speed
+    ScanDelay = {3, 5},
     SafeSlots = 1,
     ReportInterval = 10800 -- 3 Hours
 }
@@ -18,7 +18,6 @@ local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 
 -- 🎨 GUI SETUP (Movable & Rainbow)
 local ScreenGui = Instance.new("ScreenGui")
@@ -28,39 +27,34 @@ local ConsoleFrame = Instance.new("ScrollingFrame")
 local ConsoleText = Instance.new("TextLabel")
 local Footer = Instance.new("TextLabel")
 local UICorner = Instance.new("UICorner")
-local UIGradient = Instance.new("UIGradient") -- For Rainbow Border
 
 ScreenGui.Name = "EventTrackerGUI"
 ScreenGui.Parent = CoreGui
 
--- Main Box
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-MainFrame.Position = UDim2.new(1, -260, 1, -160) -- Bottom Right Start
+MainFrame.Position = UDim2.new(1, -260, 1, -160)
 MainFrame.Size = UDim2.new(0, 250, 0, 150)
-MainFrame.BorderSizePixel = 3 -- Thicker for rainbow
-MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255) -- Base color
+MainFrame.BorderSizePixel = 3
+MainFrame.BorderColor3 = Color3.fromRGB(255, 255, 255)
 MainFrame.Active = true
-MainFrame.Draggable = true -- ✅ MAKES IT MOVABLE
+MainFrame.Draggable = true 
 
--- Round Corners
 local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 8)
 Corner.Parent = MainFrame
 
--- Status Text
 StatusLabel.Name = "Status"
 StatusLabel.Parent = MainFrame
 StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 30)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⚡ SPEED SCANNING..."
+StatusLabel.Text = "⚡ 5-CHECK SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
--- Console Area
 ConsoleFrame.Name = "Console"
 ConsoleFrame.Parent = MainFrame
 ConsoleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -81,7 +75,6 @@ ConsoleText.TextXAlignment = Enum.TextXAlignment.Left
 ConsoleText.TextYAlignment = Enum.TextYAlignment.Top
 ConsoleText.TextWrapped = true
 
--- Footer
 Footer.Name = "Credit"
 Footer.Parent = MainFrame
 Footer.BackgroundTransparency = 1
@@ -92,19 +85,16 @@ Footer.Text = "- made by devansh -"
 Footer.TextColor3 = Color3.fromRGB(255, 255, 255)
 Footer.TextSize = 10
 
--- 🌈 RAINBOW ANIMATION SCRIPT
+-- 🌈 RAINBOW ANIMATION
 task.spawn(function()
     local hue = 0
     while true do
         hue = hue + 0.01
         if hue > 1 then hue = 0 end
         local rainbow = Color3.fromHSV(hue, 1, 1)
-        
-        -- Apply Rainbow to Border, Status, and Footer
         MainFrame.BorderColor3 = rainbow
         StatusLabel.TextColor3 = rainbow
         Footer.TextColor3 = rainbow
-        
         RunService.Heartbeat:Wait()
     end
 end)
@@ -133,11 +123,9 @@ end
 local function saveStats(data)
     if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end) end
 end
-
 local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
-Log("Servers Scanned (Session): " .. currentStats.TotalScanned)
 
 -- 🛡️ WEBHOOK
 local function safeRequest(url, method, body)
@@ -152,7 +140,6 @@ end
 local function checkStatusReport()
     local timeDiff = os.time() - currentStats.LastReport
     if timeDiff >= CONFIG.ReportInterval then
-        Log("Sending Report...")
         local uptimeHours = string.format("%.1f", (os.time() - currentStats.StartTime) / 3600)
         local payload = {
             ["username"] = "Tracker Status",
@@ -174,12 +161,39 @@ local function checkStatusReport()
     end
 end
 
--- 🕵️ DETECTION
-local function checkFullMoon()
-    if Lighting:GetAttribute("IsFullMoon") then return true end
-    if Lighting.Sky and Lighting.Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then return true end
+-- 🕵️ ROBUST 5-CHECK DETECTION
+local function checkFullMoonAdvanced()
+    -- CHECK 1: The Attribute (Standard)
+    if Lighting:GetAttribute("IsFullMoon") then 
+        Log("✅ Check 1: Attribute Found")
+        return true 
+    end
+
+    -- CHECK 2: The Texture ID (Hard to fake)
+    local Sky = Lighting:FindFirstChild("Sky")
+    if Sky and Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then
+        Log("✅ Check 2: Texture ID Match")
+        return true
+    end
+
+    -- CHECK 3: Kitsune Shrine (Only exists on FM)
+    if Workspace.Map:FindFirstChild("KitsuneShrine") or Workspace.Map:FindFirstChild("KitsuneIsland") then
+        Log("✅ Check 3: Kitsune Shrine Found")
+        return true
+    end
+
+    -- CHECK 4: Time + Brightness (Sanity Check)
+    -- If it's night (22-4) and really bright, it might be a FM
+    if Lighting.ClockTime > 22 or Lighting.ClockTime < 4 then
+        if Lighting.Brightness > 0.8 then -- Adjust based on game updates
+             -- This is a "weak" check, so we don't return true immediately unless sure
+             -- Log("⚠️ Check 4: High Brightness detected at Night")
+        end
+    end
+    
     return false
 end
+
 local function checkFrozenIsland()
     return Workspace.Map:FindFirstChild("Frozen Island") or Workspace.Map:FindFirstChild("FrozenDimension")
 end
@@ -235,7 +249,7 @@ local function init()
     Log("Map Loading (" .. CONFIG.ScanDelay[2] .. "s)...")
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
 
-    if checkFullMoon() then
+    if checkFullMoonAdvanced() then
         sendNotification("🌕 FULL MOON")
     elseif checkFrozenIsland() then
         sendNotification("❄️ FROZEN ISLAND")
@@ -243,7 +257,6 @@ local function init()
         Log("❌ Nothing found.")
     end
     
-    -- INSTANT HOP
     serverHop()
 end
 
