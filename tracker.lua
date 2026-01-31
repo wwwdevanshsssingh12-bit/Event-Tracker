@@ -1,4 +1,4 @@
--- [[ 🚀 GOD MODE: NO-FRIENDS EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: FRIEND EJECTOR EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
@@ -9,7 +9,8 @@ local CONFIG = {
     SafeSlots = 1,
     MinAIConfidence = 75,     
     HoldConfidence = 90,      
-    ReportInterval = 10800 -- 3 Hours
+    ReportInterval = 10800,
+    BlacklistTime = 3600 -- 1 Hour (How long to avoid a friend's server)
 }
 
 -- 🔄 SERVICES
@@ -20,6 +21,7 @@ local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 -- 🎨 GUI SETUP
 local ScreenGui = Instance.new("ScreenGui")
@@ -55,7 +57,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⏳ TIMEKEEPER SCAN..."
+StatusLabel.Text = "🛡️ FRIEND EJECTOR..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
@@ -138,14 +140,33 @@ local function UpdateGUI(status, prob, age)
     if age then AgeLabel.Text = "Age: " .. age end
 end
 
--- 📂 STATS SYSTEM
+-- 📂 STATS & BLACKLIST SYSTEM (File Saving)
 local FileName = "BloxTrackerStats.json"
+
+-- Cleans old servers from blacklist (older than 1 hour)
+local function cleanBlacklist(data)
+    local now = os.time()
+    local newBlacklist = {}
+    if data.Blacklist then
+        for _, entry in pairs(data.Blacklist) do
+            if (now - entry.time) < CONFIG.BlacklistTime then
+                table.insert(newBlacklist, entry)
+            end
+        end
+    end
+    data.Blacklist = newBlacklist
+    return data
+end
+
 local function loadStats()
     if isfile and isfile(FileName) then
         local success, data = pcall(function() return HttpService:JSONDecode(readfile(FileName)) end)
-        if success and data then return data end
+        if success and data then 
+            if not data.Blacklist then data.Blacklist = {} end
+            return cleanBlacklist(data)
+        end
     end
-    return { TotalScanned = 0, LastReport = os.time(), StartTime = os.time() }
+    return { TotalScanned = 0, LastReport = os.time(), StartTime = os.time(), Blacklist = {} }
 end
 
 local function saveStats(data)
@@ -155,6 +176,18 @@ end
 local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
+
+-- 🛡️ FRIEND CHECKER
+local function checkForFriends()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            if player:IsFriendsWith(LocalPlayer.UserId) then
+                return true, player.Name
+            end
+        end
+    end
+    return false, nil
+end
 
 local function safeRequest(url, method, body)
     local requestFunc = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
@@ -350,12 +383,12 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
 
     local payload = {
         ["username"] = "Event Tracker",
-        ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
+        ["avatar_url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697eb0d0&is=697d5f50&hm=d21607136eb0da061375a83ac0193be9a4500a1d7857c868653a87cceb9b83a2&",
         ["content"] = CONFIG.PingRole, 
         ["embeds"] = {{
             ["title"] = titleText,
             ["color"] = color,
-            ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
+            ["thumbnail"] = { ["url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697eb0d0&is=697d5f50&hm=d21607136eb0da061375a83ac0193be9a4500a1d7857c868653a87cceb9b83a2&" },
             ["fields"] = fields,
             ["footer"] = { ["text"] = "Devansh || Event Tracker" },
             ["timestamp"] = DateTime.now():ToIsoDate()
@@ -364,36 +397,85 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 HOPPER (FIXED: NO FRIENDS)
+-- 🐇 HOPPER (DEEP SCROLL + BLACKLIST CHECK)
 local function serverHop()
     UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
-    Log("Hopping to a RANDOM server (Skipping Friends)...")
     
-    -- Filter to exclude friends
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&excludeFullGames=true&limit=100"
-    local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
+    local deepFactor = math.random(1, 4)
+    Log("🌀 Deep Scrolling... (Skipping " .. (deepFactor - 1) .. " pages)")
     
-    if success and result and result.data then
-        for _, server in pairs(result.data) do
-            -- CHECK: Not full AND Not current server
-            if server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
-                return
+    local cursor = ""
+    local attempts = 0
+    
+    while attempts < deepFactor do
+        local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&excludeFullGames=true&limit=100"
+        if cursor ~= "" then api = api .. "&cursor=" .. cursor end
+        
+        local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
+        
+        if success and result and result.data then
+            if attempts == (deepFactor - 1) or not result.nextPageCursor then
+                -- Target Page Reached. Find valid server.
+                local validServers = {}
+                for _, server in pairs(result.data) do
+                    -- 1. Check if server ID is in Blacklist (FRIEND ZONE)
+                    local isBlacklisted = false
+                    for _, entry in pairs(currentStats.Blacklist) do
+                        if entry.id == server.id then isBlacklisted = true break end
+                    end
+                    
+                    -- 2. Add if Safe, Not Current, Not Blacklisted
+                    if not isBlacklisted and server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
+                        table.insert(validServers, server)
+                    end
+                end
+                
+                if #validServers > 0 then
+                    local randomServer = validServers[math.random(1, #validServers)]
+                    Log("🚀 Joining: " .. randomServer.id)
+                    TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id)
+                    return
+                end
             end
+            
+            if result.nextPageCursor then
+                cursor = result.nextPageCursor
+                attempts = attempts + 1
+            else
+                break 
+            end
+        else
+            break
         end
     end
     
-    -- Fallback if API fails: Just teleport to place (Roblox handles random slot)
-    TeleportService:Teleport(game.PlaceId)
+    Log("❌ Retry...")
+    task.wait(5)
+    serverHop() 
 end
 
 -- 🚀 MAIN EXECUTION
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
-    -- CHECK REPORT STATUS
     checkStatusReport()
 
+    -- 🛡️ 1. CHECK FOR FRIENDS (THE EJECTOR)
+    local hasFriend, friendName = checkForFriends()
+    if hasFriend then
+        Log("🚨 FRIEND DETECTED: " .. friendName)
+        UpdateGUI("🛡️ FRIEND DETECTED! EJECTING...", "---", "---")
+        
+        -- Add to Blacklist (1 Hour)
+        table.insert(currentStats.Blacklist, {id = game.JobId, time = os.time()})
+        saveStats(currentStats)
+        
+        task.wait(1)
+        serverHop() -- Leave immediately
+        return
+    end
+    
+    -- 2. NORMAL SCAN
     local ageFormatted = formatAge(getServerAge())
     UpdateGUI("🔍 SCANNING...", "0%", ageFormatted)
     Log("Server Age: " .. ageFormatted)
