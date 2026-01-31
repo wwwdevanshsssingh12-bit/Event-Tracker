@@ -1,4 +1,4 @@
--- [[ 🚀 GOD MODE: FRIEND EJECTOR EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: LIVE TIMER EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
@@ -10,7 +10,7 @@ local CONFIG = {
     MinAIConfidence = 75,     
     HoldConfidence = 90,      
     ReportInterval = 10800,
-    BlacklistTime = 3600 -- 1 Hour (How long to avoid a friend's server)
+    BlacklistTime = 3600
 }
 
 -- 🔄 SERVICES
@@ -57,7 +57,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "🛡️ FRIEND EJECTOR..."
+StatusLabel.Text = "⏳ LIVE TIMER SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
@@ -140,10 +140,9 @@ local function UpdateGUI(status, prob, age)
     if age then AgeLabel.Text = "Age: " .. age end
 end
 
--- 📂 STATS & BLACKLIST SYSTEM (File Saving)
+-- 📂 STATS & BLACKLIST SYSTEM
 local FileName = "BloxTrackerStats.json"
 
--- Cleans old servers from blacklist (older than 1 hour)
 local function cleanBlacklist(data)
     local now = os.time()
     local newBlacklist = {}
@@ -243,20 +242,27 @@ local function checkStatusReport()
     end
 end
 
--- ⏳ EXPIRATION CALCULATOR
+-- ⏳ LIVE EXPIRATION CALCULATOR (DISCORD TIMESTAMP)
 local function getEventStatus()
     local currentTime = Lighting.ClockTime
     local status = "🟢 Unknown"
-    local timeLeft = "Unknown"
+    local discordTimestamp = "Unknown"
     
     if currentTime >= 18 or currentTime < 5 then
+        -- Calculate Hours Remaining
         local hoursLeft = 0
         if currentTime >= 18 then
             hoursLeft = (24 - currentTime) + 5
         else
             hoursLeft = 5 - currentTime
         end
-        local minutesRemaining = math.floor(hoursLeft * 1.5)
+        
+        -- Convert to Seconds (1 Game Hour ~= 45-60 seconds, estimate 50s for safety)
+        local secondsLeft = math.floor(hoursLeft * 50) 
+        
+        -- Create Discord Future Timestamp
+        local futureTime = os.time() + secondsLeft
+        discordTimestamp = "<t:" .. futureTime .. ":R>" -- R = Relative (e.g., "in 14 minutes")
         
         if hoursLeft > 4 then
             status = "🟢 FRESH (Just Started)"
@@ -267,13 +273,12 @@ local function getEventStatus()
         else
             status = "🔴 CRITICAL (Expiring!)"
         end
-        timeLeft = "~" .. minutesRemaining .. " mins left"
     else
         status = "🔴 EXPIRED (Day Time)"
-        timeLeft = "0 mins"
+        discordTimestamp = "Ended"
     end
     
-    return status, timeLeft, currentTime
+    return status, discordTimestamp, currentTime
 end
 
 -- 🧠 GOD AI ENGINE
@@ -347,7 +352,7 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     UpdateGUI("💎 JACKPOT FOUND!")
     local jobId, placeId = game.JobId, game.PlaceId
     local age = formatAge(getServerAge())
-    local status, timeLeft, gameHour = getEventStatus()
+    local status, discordTimestamp, gameHour = getEventStatus()
     
     local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..placeId..', "'..jobId..'", game.Players.LocalPlayer)'
     local titleText = "🌟 EVENT DETECTED"
@@ -372,7 +377,8 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
         for _, ev in pairs(eventsList) do
             table.insert(fields, {["name"] = "💎 FOUND:", ["value"] = "**" .. ev.name .. "** (" .. ev.method .. ")", ["inline"] = false})
         end
-        table.insert(fields, {["name"] = "⏳ STATUS / TIMER", ["value"] = status .. "\n🕐 **Time Left:** " .. timeLeft .. "\n🕛 **Game Time:** " .. math.floor(gameHour) .. ":00", ["inline"] = false})
+        -- NOTE: Using discordTimestamp here which prints <t:12345:R>
+        table.insert(fields, {["name"] = "⏳ STATUS / TIMER", ["value"] = status .. "\n🕐 **Ends:** " .. discordTimestamp .. "\n🕛 **Game Time:** " .. math.floor(gameHour) .. ":00", ["inline"] = false})
     else
         table.insert(fields, {["name"] = "🔮 PREDICTION:", ["value"] = "**" .. aiReason .. "** (Confidence: " .. aiScore .. "%)", ["inline"] = false})
     end
@@ -383,12 +389,12 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
 
     local payload = {
         ["username"] = "Event Tracker",
-        ["avatar_url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697eb0d0&is=697d5f50&hm=d21607136eb0da061375a83ac0193be9a4500a1d7857c868653a87cceb9b83a2&",
+        ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
         ["content"] = CONFIG.PingRole, 
         ["embeds"] = {{
             ["title"] = titleText,
             ["color"] = color,
-            ["thumbnail"] = { ["url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697eb0d0&is=697d5f50&hm=d21607136eb0da061375a83ac0193be9a4500a1d7857c868653a87cceb9b83a2&" },
+            ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
             ["fields"] = fields,
             ["footer"] = { ["text"] = "Devansh || Event Tracker" },
             ["timestamp"] = DateTime.now():ToIsoDate()
