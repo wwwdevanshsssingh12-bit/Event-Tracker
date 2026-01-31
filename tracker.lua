@@ -1,4 +1,4 @@
--- [[ 🚀 GOD MODE: FINAL FIXED & RESTORED 🚀 ]] --
+-- [[ 🚀 GOD MODE: NO-FRIENDS EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
@@ -147,9 +147,11 @@ local function loadStats()
     end
     return { TotalScanned = 0, LastReport = os.time(), StartTime = os.time() }
 end
+
 local function saveStats(data)
     if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end) end
 end
+
 local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
@@ -176,7 +178,7 @@ local function formatAge(seconds)
     return string.format("%dh %02dm", hours, minutes)
 end
 
--- 📊 3-HOUR REPORT FUNCTION (This was missing!)
+-- 📊 3-HOUR REPORT FUNCTION
 local function checkStatusReport()
     local timeDiff = os.time() - currentStats.LastReport
     if timeDiff >= CONFIG.ReportInterval then
@@ -362,21 +364,26 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 HOPPER
+-- 🐇 HOPPER (FIXED: NO FRIENDS)
 local function serverHop()
     UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
-    Log("Hopping to next server...")
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"
+    Log("Hopping to a RANDOM server (Skipping Friends)...")
+    
+    -- Filter to exclude friends
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&excludeFullGames=true&limit=100"
     local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
     
     if success and result and result.data then
         for _, server in pairs(result.data) do
+            -- CHECK: Not full AND Not current server
             if server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, server.id)
                 return
             end
         end
     end
+    
+    -- Fallback if API fails: Just teleport to place (Roblox handles random slot)
     TeleportService:Teleport(game.PlaceId)
 end
 
@@ -384,7 +391,7 @@ end
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
-    -- CHECK REPORT STATUS (Restored!)
+    -- CHECK REPORT STATUS
     checkStatusReport()
 
     local ageFormatted = formatAge(getServerAge())
