@@ -1,16 +1,15 @@
--- [[ 🚀 GOD MODE: BOT DATA LINK V4 🚀 ]] --
+-- [[ 🚀 GOD MODE: RAW DATA CLIENT 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    -- 🔴 HIDDEN WEBHOOK (Your Private Admin Channel)
+    -- 🔴 YOUR PRIVATE (HIDDEN) WEBHOOK
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     
     ScanDelay = {2, 4},       
     SafeSlots = 1,
     MinAIConfidence = 75,     
     HoldConfidence = 90,      
-    ReportInterval = 10800,
     BlacklistTime = 3600
 }
 
@@ -58,19 +57,19 @@ local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
 
--- 🛡️ FRIEND CHECKER
+-- 🛡️ FRIEND CHECKER (The Ejector)
 local function checkForFriends()
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             if player:IsFriendsWith(LocalPlayer.UserId) then
-                return true, player.Name
+                return true
             end
         end
     end
-    return false, nil
+    return false
 end
 
--- ⏳ TIME CALCULATOR (Returns Seconds Left)
+-- ⏳ TIMEKEEPER (Returns Seconds Remaining)
 local function getTimeRemaining()
     local currentTime = Lighting.ClockTime
     if currentTime >= 18 or currentTime < 5 then
@@ -78,64 +77,88 @@ local function getTimeRemaining()
         if currentTime >= 18 then hoursLeft = (24 - currentTime) + 5
         else hoursLeft = 5 - currentTime end
         
-        -- Convert game hours to real seconds (approx 50s per hour)
+        -- Game Hour to Real Seconds (Approx 50s per hour buffer)
         return math.floor(hoursLeft * 50)
     end
     return 0
 end
 
--- 🕵️ EVENT SCANNER
-local function scanAllEvents()
-    local detectedEvents = {}
-    local Sky = Lighting:FindFirstChild("Sky")
+-- 🧠 GOD AI ENGINE
+local function calculateAI()
+    local score = 0
+    local reasons = {}
+    local age = workspace.DistributedGameTime
     
-    if Sky and Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then table.insert(detectedEvents, "🌕 FULL MOON")
-    elseif Lighting:GetAttribute("IsFullMoon") then table.insert(detectedEvents, "🌕 FULL MOON") end
-    
-    if Workspace.Map:FindFirstChild("FrozenDimension") then table.insert(detectedEvents, "❄️ LEVIATHAN GATE")
-    elseif Workspace.Map:FindFirstChild("Frozen Island") then table.insert(detectedEvents, "❄️ FROZEN ISLAND") end
-    
-    if Workspace.Map:FindFirstChild("KitsuneShrine") then table.insert(detectedEvents, "🦊 KITSUNE ISLAND") end
-    if Workspace.Map:FindFirstChild("MysticIsland") then table.insert(detectedEvents, "🏝️ MIRAGE ISLAND") end
+    -- Time Logic
+    if age > 3200 and age < 5000 then score = score + 40; table.insert(reasons, "Prime Time")
+    elseif age > 2500 and age <= 3200 then score = score + 15; table.insert(reasons, "Moon Soon") end
 
-    return detectedEvents
+    -- Player Logic
+    local seaCluster, templeCluster = 0, 0
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local pos = p.Character.HumanoidRootPart.Position
+            if pos.Magnitude > 12000 then seaCluster = seaCluster + 1 end
+            local distToTree = (Vector3.new(28200, 0, -12000) - Vector3.new(pos.X, 0, pos.Z)).Magnitude
+            if distToTree < 1000 and pos.Y > 500 then templeCluster = templeCluster + 1 end
+        end
+    end
+    if seaCluster >= 3 then score = score + 15; table.insert(reasons, "Deep Sea Squad") end
+    if templeCluster >= 1 then score = score + 30; table.insert(reasons, "Temple Campers") end
+
+    return score, table.concat(reasons, ", ")
 end
 
--- 📨 BOT DATA SENDER
-local function sendToBot(eventsList)
-    local jobId, placeId = game.JobId, game.PlaceId
-    local secondsLeft = getTimeRemaining()
+-- 🕵️ EVENT SCANNER
+local function scanAllEvents()
+    local events = {}
+    local Sky = Lighting:FindFirstChild("Sky")
     
-    -- Prepare the Script string for the button
+    if (Sky and Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431") or Lighting:GetAttribute("IsFullMoon") then table.insert(events, "🌕 FULL MOON") end
+    if Workspace.Map:FindFirstChild("FrozenDimension") then table.insert(events, "❄️ LEVIATHAN GATE") end
+    if Workspace.Map:FindFirstChild("Frozen Island") then table.insert(events, "❄️ FROZEN ISLAND") end
+    if Workspace.Map:FindFirstChild("KitsuneShrine") then table.insert(events, "🦊 KITSUNE ISLAND") end
+    if Workspace.Map:FindFirstChild("MysticIsland") then table.insert(events, "🏝️ MIRAGE ISLAND") end
+
+    return events
+end
+
+-- 📨 RAW DATA SENDER (No Embeds Here!)
+local function sendDataPacket(statusType, eventsList, aiScore, aiReason)
+    local jobId = game.JobId
+    local placeId = game.PlaceId
+    local secondsLeft = getTimeRemaining()
     local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..placeId..', "'..jobId..'", game.Players.LocalPlayer)'
     
-    -- Combine events into one string
-    local eventString = table.concat(eventsList, " + ")
-    
-    -- Construct the Data Packet (JSON)
-    local payload = {
-        ["content"] = "DATA_PACKET", -- Bot trigger
-        ["embeds"] = {{
-            ["title"] = "RAW_DATA",
-            ["description"] = joinScript, -- Hidden script
-            ["fields"] = {
-                {["name"] = "Events", ["value"] = eventString, ["inline"] = false},
-                {["name"] = "SecondsLeft", ["value"] = tostring(secondsLeft), ["inline"] = false},
-                {["name"] = "JobId", ["value"] = jobId, ["inline"] = false}
-            }
-        }}
+    -- Construct Pure JSON Payload
+    local data = {
+        ["type"] = "DATA_PACKET",
+        ["payload"] = {
+            ["status"] = statusType, -- "CONFIRMED" or "PREDICTION"
+            ["events"] = eventsList,
+            ["ai_score"] = aiScore,
+            ["ai_reason"] = aiReason,
+            ["seconds_left"] = secondsLeft,
+            ["job_id"] = jobId,
+            ["join_script"] = joinScript,
+            ["server_age"] = math.floor(workspace.DistributedGameTime)
+        }
     }
-    
+
     local requestFunc = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
     if requestFunc then
-        requestFunc({Url = CONFIG.WebhookURL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(payload)})
+        requestFunc({
+            Url = CONFIG.WebhookURL,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode({["content"] = HttpService:JSONEncode(data)}) -- Nested JSON for Bot to parse content string
+        })
     end
 end
 
--- 🐇 SMART HOPPER
+-- 🐇 DEEP SCROLL HOPPER
 local function serverHop()
     local sortOrders = {"Desc", "Asc"}
-    -- Random sort + Limit 100
     local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. sortOrders[math.random(1, 2)] .. "&excludeFullGames=true&limit=100"
     
     local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
@@ -162,13 +185,12 @@ local function serverHop()
     serverHop()
 end
 
--- 🚀 MAIN EXECUTION
+-- 🚀 MAIN INIT
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
-    -- 1. Friend Check
-    local hasFriend, friendName = checkForFriends()
-    if hasFriend then
+    -- 1. Friend Ejector
+    if checkForFriends() then
         table.insert(currentStats.Blacklist, {id = game.JobId, time = os.time()})
         saveStats(currentStats)
         serverHop()
@@ -177,11 +199,30 @@ local function init()
     
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
     
-    -- 2. Event Check
+    -- 2. Scan
     local foundEvents = scanAllEvents()
     if #foundEvents > 0 then
-        sendToBot(foundEvents)
-        task.wait(3) 
+        -- FOUND! Send Data
+        sendDataPacket("CONFIRMED", foundEvents, 100, "Hard Detect")
+        task.wait(3)
+        serverHop()
+        return
+    end
+    
+    -- 3. AI Prediction
+    local score, reason = calculateAI()
+    if score >= CONFIG.HoldConfidence then
+        task.wait(5) -- Hold for visual check
+        foundEvents = scanAllEvents()
+        if #foundEvents > 0 then
+            sendDataPacket("CONFIRMED", foundEvents, 100, "Visual Confirm")
+        else
+            sendDataPacket("PREDICTION", {}, score, reason)
+        end
+        task.wait(3)
+    elseif score >= CONFIG.MinAIConfidence then
+        sendDataPacket("PREDICTION", {}, score, reason)
+        task.wait(3)
     end
     
     serverHop()
