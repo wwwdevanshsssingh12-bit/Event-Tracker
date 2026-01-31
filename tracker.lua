@@ -1,15 +1,15 @@
--- [[ 🚀 GOD MODE: TIMEKEEPER EDITION (FIXED) 🚀 ]] --
+-- [[ 🚀 GOD MODE: FINAL FIXED & RESTORED 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q",
+    WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole = "@everyone", 
     ScanDelay = {2, 4},       
     SafeSlots = 1,
     MinAIConfidence = 75,     
     HoldConfidence = 90,      
-    ReportInterval = 10800    
+    ReportInterval = 10800 -- 3 Hours
 }
 
 -- 🔄 SERVICES
@@ -35,14 +35,13 @@ local UICorner = Instance.new("UICorner")
 ScreenGui.Name = "DevanshEventTracker"
 ScreenGui.Parent = CoreGui
 
--- Main Box
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) 
 MainFrame.Position = UDim2.new(1, -280, 1, -200) 
 MainFrame.Size = UDim2.new(0, 260, 0, 190)
 MainFrame.BorderSizePixel = 3
-MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0) 
+MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0) -- Gold
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
@@ -50,7 +49,6 @@ local Corner = Instance.new("UICorner")
 Corner.CornerRadius = UDim.new(0, 8)
 Corner.Parent = MainFrame
 
--- Status Text
 StatusLabel.Name = "Status"
 StatusLabel.Parent = MainFrame
 StatusLabel.BackgroundTransparency = 1
@@ -61,7 +59,6 @@ StatusLabel.Text = "⏳ TIMEKEEPER SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
--- AI Stats
 ConfidenceLabel.Name = "AIStatus"
 ConfidenceLabel.Parent = MainFrame
 ConfidenceLabel.BackgroundTransparency = 1
@@ -73,7 +70,6 @@ ConfidenceLabel.TextColor3 = Color3.fromRGB(0, 255, 120)
 ConfidenceLabel.TextSize = 12
 ConfidenceLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Server Age
 AgeLabel.Name = "AgeStatus"
 AgeLabel.Parent = MainFrame
 AgeLabel.BackgroundTransparency = 1
@@ -85,7 +81,6 @@ AgeLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
 AgeLabel.TextSize = 12
 AgeLabel.TextXAlignment = Enum.TextXAlignment.Right
 
--- Console
 ConsoleFrame.Name = "Console"
 ConsoleFrame.Parent = MainFrame
 ConsoleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
@@ -99,14 +94,13 @@ ConsoleText.Parent = ConsoleFrame
 ConsoleText.BackgroundTransparency = 1
 ConsoleText.Size = UDim2.new(1, 0, 1, 0)
 ConsoleText.Font = Enum.Font.Code
-ConsoleText.Text = "Timekeeper Engine Loaded..."
+ConsoleText.Text = "Script Loaded..."
 ConsoleText.TextColor3 = Color3.fromRGB(200, 200, 200)
 ConsoleText.TextSize = 11
 ConsoleText.TextXAlignment = Enum.TextXAlignment.Left
 ConsoleText.TextYAlignment = Enum.TextYAlignment.Top
 ConsoleText.TextWrapped = true
 
--- Footer
 Footer.Name = "Credit"
 Footer.Parent = MainFrame
 Footer.BackgroundTransparency = 1
@@ -117,7 +111,6 @@ Footer.Text = "- made by devansh -"
 Footer.TextColor3 = Color3.fromRGB(255, 215, 0)
 Footer.TextSize = 10
 
--- 🌈 RAINBOW ANIMATION
 task.spawn(function()
     local hue = 0
     while true do
@@ -164,9 +157,15 @@ saveStats(currentStats)
 local function safeRequest(url, method, body)
     local requestFunc = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
     if not requestFunc then return end
-    pcall(function()
+    
+    local success, err = pcall(function()
         requestFunc({Url = url, Method = method, Headers = {["Content-Type"] = "application/json"}, Body = body})
     end)
+    
+    if not success then
+        warn("⚠️ Webhook Failed: " .. tostring(err))
+        Log("⚠️ Webhook Failed! Check Console.")
+    end
 end
 
 local function getServerAge() return workspace.DistributedGameTime end
@@ -175,6 +174,38 @@ local function formatAge(seconds)
     local hours = math.floor(minutes / 60)
     minutes = minutes % 60
     return string.format("%dh %02dm", hours, minutes)
+end
+
+-- 📊 3-HOUR REPORT FUNCTION (This was missing!)
+local function checkStatusReport()
+    local timeDiff = os.time() - currentStats.LastReport
+    if timeDiff >= CONFIG.ReportInterval then
+        Log("Sending 3-Hour Report...")
+        local uptimeHours = string.format("%.1f", (os.time() - currentStats.StartTime) / 3600)
+
+        local payload = {
+            ["username"] = "Tracker Stats",
+            ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
+            ["embeds"] = {{
+                ["title"] = "📈 System Status Report",
+                ["description"] = "The tracking system is active.",
+                ["color"] = 3447003,
+                ["fields"] = {
+                    {["name"] = "📡 Servers Scanned (3h)", ["value"] = "```" .. currentStats.TotalScanned .. " Servers```", ["inline"] = true},
+                    {["name"] = "⏱️ Total Uptime", ["value"] = "```" .. uptimeHours .. " Hours```", ["inline"] = true}
+                },
+                ["footer"] = { ["text"] = "Devansh || Event Tracker" },
+                ["timestamp"] = DateTime.now():ToIsoDate()
+            }}
+        }
+        
+        safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
+        
+        -- Reset Cycle
+        currentStats.TotalScanned = 0
+        currentStats.LastReport = os.time()
+        saveStats(currentStats)
+    end
 end
 
 -- ⏳ EXPIRATION CALCULATOR
@@ -190,7 +221,6 @@ local function getEventStatus()
         else
             hoursLeft = 5 - currentTime
         end
-        
         local minutesRemaining = math.floor(hoursLeft * 1.5)
         
         if hoursLeft > 4 then
@@ -217,7 +247,6 @@ local function calculateAI()
     local reasons = {}
     local ageSeconds = getServerAge()
     
-    -- 1. SERVER AGE
     if ageSeconds > 3200 and ageSeconds < 5000 then 
         score = score + 40
         table.insert(reasons, "Prime Time")
@@ -226,7 +255,6 @@ local function calculateAI()
         table.insert(reasons, "Moon in ~15m")
     end
 
-    -- 2. LIGHTING
     if Lighting.ClockTime > 20 or Lighting.ClockTime < 5 then
         score = score + 10
         if Lighting.Brightness > 0.6 then
@@ -235,7 +263,6 @@ local function calculateAI()
         end
     end
 
-    -- 3. BEHAVIOR
     local seaCluster = 0
     local templeCluster = 0
     for _, p in pairs(Players:GetPlayers()) do
@@ -300,7 +327,7 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     end
 
     if string.find(status, "CRITICAL") or string.find(status, "EXPIRED") then
-        color = 10038562 -- Dark Red (Warning)
+        color = 10038562 -- Dark Red
         titleText = "⚠️ EXPIRING EVENT FOUND"
     end
 
@@ -321,14 +348,14 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
 
     local payload = {
         ["username"] = "Event Tracker",
-        ["avatar_url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697e0810&is=697cb690&hm=148983120f5c93dae556b4a85f69e073692543227c8b4f956ee02dbddbc44b37&",
+        ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
         ["content"] = CONFIG.PingRole, 
         ["embeds"] = {{
             ["title"] = titleText,
             ["color"] = color,
-            ["thumbnail"] = { ["url"] = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=697e0810&is=697cb690&hm=148983120f5c93dae556b4a85f69e073692543227c8b4f956ee02dbddbc44b37&" },
+            ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
             ["fields"] = fields,
-            ["footer"] = { ["text"] = "Devansh  || Event Tracker" },
+            ["footer"] = { ["text"] = "Devansh || Event Tracker" },
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -357,8 +384,11 @@ end
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
+    -- CHECK REPORT STATUS (Restored!)
+    checkStatusReport()
+
     local ageFormatted = formatAge(getServerAge())
-    UpdateGUI("🔍 TIME SCANNING...", "0%", ageFormatted)
+    UpdateGUI("🔍 SCANNING...", "0%", ageFormatted)
     Log("Server Age: " .. ageFormatted)
     
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
@@ -366,7 +396,7 @@ local function init()
     local foundEvents = scanAllEvents()
     
     if #foundEvents > 0 then
-        Log("✅ FOUND " .. #foundEvents .. " EVENTS!")
+        Log("✅ FOUND EVENTS!")
         sendStackedNotification(foundEvents, false, nil, nil)
         task.wait(2)
         serverHop()
