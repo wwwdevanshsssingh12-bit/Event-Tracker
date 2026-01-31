@@ -1,4 +1,4 @@
--- [[ 🚀 GOD MODE: LIVE TIMER EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: SMART HOPPER EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
@@ -57,7 +57,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⏳ LIVE TIMER SCAN..."
+StatusLabel.Text = "⚡ SMART HOP SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
@@ -140,7 +140,7 @@ local function UpdateGUI(status, prob, age)
     if age then AgeLabel.Text = "Age: " .. age end
 end
 
--- 📂 STATS & BLACKLIST SYSTEM
+-- 📂 STATS & BLACKLIST SYSTEM (Cleaned)
 local FileName = "BloxTrackerStats.json"
 
 local function cleanBlacklist(data)
@@ -242,14 +242,13 @@ local function checkStatusReport()
     end
 end
 
--- ⏳ LIVE EXPIRATION CALCULATOR (DISCORD TIMESTAMP)
+-- ⏳ EXPIRATION CALCULATOR
 local function getEventStatus()
     local currentTime = Lighting.ClockTime
     local status = "🟢 Unknown"
     local discordTimestamp = "Unknown"
     
     if currentTime >= 18 or currentTime < 5 then
-        -- Calculate Hours Remaining
         local hoursLeft = 0
         if currentTime >= 18 then
             hoursLeft = (24 - currentTime) + 5
@@ -257,12 +256,9 @@ local function getEventStatus()
             hoursLeft = 5 - currentTime
         end
         
-        -- Convert to Seconds (1 Game Hour ~= 45-60 seconds, estimate 50s for safety)
         local secondsLeft = math.floor(hoursLeft * 50) 
-        
-        -- Create Discord Future Timestamp
         local futureTime = os.time() + secondsLeft
-        discordTimestamp = "<t:" .. futureTime .. ":R>" -- R = Relative (e.g., "in 14 minutes")
+        discordTimestamp = "<t:" .. futureTime .. ":R>"
         
         if hoursLeft > 4 then
             status = "🟢 FRESH (Just Started)"
@@ -347,7 +343,7 @@ local function scanAllEvents()
     return detectedEvents
 end
 
--- 📨 PROFESSIONAL WEBHOOK
+-- 📨 PROFESSIONAL WEBHOOK (Fixed Copy Block)
 local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReason)
     UpdateGUI("💎 JACKPOT FOUND!")
     local jobId, placeId = game.JobId, game.PlaceId
@@ -377,14 +373,14 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
         for _, ev in pairs(eventsList) do
             table.insert(fields, {["name"] = "💎 FOUND:", ["value"] = "**" .. ev.name .. "** (" .. ev.method .. ")", ["inline"] = false})
         end
-        -- NOTE: Using discordTimestamp here which prints <t:12345:R>
         table.insert(fields, {["name"] = "⏳ STATUS / TIMER", ["value"] = status .. "\n🕐 **Ends:** " .. discordTimestamp .. "\n🕛 **Game Time:** " .. math.floor(gameHour) .. ":00", ["inline"] = false})
     else
         table.insert(fields, {["name"] = "🔮 PREDICTION:", ["value"] = "**" .. aiReason .. "** (Confidence: " .. aiScore .. "%)", ["inline"] = false})
     end
 
     table.insert(fields, {["name"] = "⏳ Server Age", ["value"] = "`" .. age .. "`", ["inline"] = true})
-    table.insert(fields, {["name"] = "👇 PASTE IN DELTA TO JOIN 👇", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
+    -- SPECIAL SEPARATE FIELD FOR COPYING
+    table.insert(fields, {["name"] = "👇 JOIN SCRIPT (Copy Below)", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
     table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
 
     local payload = {
@@ -403,60 +399,45 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 HOPPER (DEEP SCROLL + BLACKLIST CHECK)
+-- 🐇 HOPPER (FIXED: SMART RANDOM + NO FRIENDS)
 local function serverHop()
     UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
     
-    local deepFactor = math.random(1, 4)
-    Log("🌀 Deep Scrolling... (Skipping " .. (deepFactor - 1) .. " pages)")
+    -- Randomly toggle between Ascending (Empty) and Descending (Full) to avoid "Same 100 Servers" loop
+    local sortOrders = {"Desc", "Asc"}
+    local chosenSort = sortOrders[math.random(1, 2)]
     
-    local cursor = ""
-    local attempts = 0
+    Log("🎲 Searching Public Servers (" .. chosenSort .. ")...")
     
-    while attempts < deepFactor do
-        local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&excludeFullGames=true&limit=100"
-        if cursor ~= "" then api = api .. "&cursor=" .. cursor end
-        
-        local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
-        
-        if success and result and result.data then
-            if attempts == (deepFactor - 1) or not result.nextPageCursor then
-                -- Target Page Reached. Find valid server.
-                local validServers = {}
-                for _, server in pairs(result.data) do
-                    -- 1. Check if server ID is in Blacklist (FRIEND ZONE)
-                    local isBlacklisted = false
-                    for _, entry in pairs(currentStats.Blacklist) do
-                        if entry.id == server.id then isBlacklisted = true break end
-                    end
-                    
-                    -- 2. Add if Safe, Not Current, Not Blacklisted
-                    if not isBlacklisted and server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
-                        table.insert(validServers, server)
-                    end
-                end
-                
-                if #validServers > 0 then
-                    local randomServer = validServers[math.random(1, #validServers)]
-                    Log("🚀 Joining: " .. randomServer.id)
-                    TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id)
-                    return
-                end
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. chosenSort .. "&excludeFullGames=true&limit=100"
+    local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
+    
+    if success and result and result.data then
+        local validServers = {}
+        for _, server in pairs(result.data) do
+            -- 1. Check Blacklist (Friend Zone)
+            local isBlacklisted = false
+            for _, entry in pairs(currentStats.Blacklist) do
+                if entry.id == server.id then isBlacklisted = true break end
             end
             
-            if result.nextPageCursor then
-                cursor = result.nextPageCursor
-                attempts = attempts + 1
-            else
-                break 
+            -- 2. Add if Safe, Not Current, Not Blacklisted
+            if not isBlacklisted and server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
+                table.insert(validServers, server)
             end
-        else
-            break
+        end
+        
+        if #validServers > 0 then
+            local randomServer = validServers[math.random(1, #validServers)]
+            Log("🚀 Joining: " .. randomServer.id)
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id)
+            return
         end
     end
     
-    Log("❌ Retry...")
-    task.wait(5)
+    -- Fallback: Just try again
+    Log("❌ API Error/No Servers. Retrying...")
+    task.wait(2)
     serverHop() 
 end
 
@@ -477,7 +458,7 @@ local function init()
         saveStats(currentStats)
         
         task.wait(1)
-        serverHop() -- Leave immediately
+        serverHop() 
         return
     end
     
