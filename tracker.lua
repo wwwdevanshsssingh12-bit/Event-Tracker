@@ -1,4 +1,4 @@
--- [[ 🚀 GOD MODE: ULTIMATE SINGLE SCRIPT 🚀 ]] --
+-- [[ 🚀 GOD MODE: FAST ASCENDING EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
@@ -7,12 +7,12 @@ local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     
     PingRole = "@everyone", -- Role to ping
-    ScanDelay = {2, 4},     -- Delay before scanning
-    SafeSlots = 1,          -- Slots to leave open
-    MinAIConfidence = 75,   -- AI Reporting Threshold
-    HoldConfidence = 90,    -- AI Holding Threshold
-    ReportInterval = 10800, -- 3 Hours for Stats Report
-    BlacklistTime = 3600    -- 1 Hour Friend Blacklist
+    ScanDelay = {2, 3},     -- Reduced delay for faster hopping
+    SafeSlots = 1,          
+    MinAIConfidence = 75,   
+    HoldConfidence = 90,    
+    ReportInterval = 10800, 
+    BlacklistTime = 3600    
 }
 
 -- 🔄 SERVICES
@@ -59,7 +59,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⚡ GOD MODE SCAN..."
+StatusLabel.Text = "⚡ FAST ASC SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
@@ -247,6 +247,7 @@ local function calculateAI()
     local reasons = {}
     local ageSeconds = getServerAge()
     
+    -- 1. SERVER AGE
     if ageSeconds > 3200 and ageSeconds < 5000 then 
         score = score + 40
         table.insert(reasons, "Prime Time")
@@ -255,6 +256,7 @@ local function calculateAI()
         table.insert(reasons, "Moon in ~15m")
     end
 
+    -- 2. LIGHTING CHECKS
     if Lighting.ClockTime > 20 or Lighting.ClockTime < 5 then
         score = score + 10
         if Lighting.Brightness > 0.6 then
@@ -263,6 +265,7 @@ local function calculateAI()
         end
     end
 
+    -- 3. PLAYER BEHAVIOR
     local seaCluster = 0
     local templeCluster = 0
     for _, p in pairs(Players:GetPlayers()) do
@@ -273,6 +276,7 @@ local function calculateAI()
             if distToTree < 1000 and pos.Y > 500 then templeCluster = templeCluster + 1 end
         end
     end
+    
     if seaCluster >= 3 then score = score + 15; table.insert(reasons, "Deep Sea Squad") end
     if templeCluster >= 1 then score = score + 30; table.insert(reasons, "V4 Temple Campers") end
 
@@ -327,7 +331,7 @@ local function checkStatusReport()
     end
 end
 
--- 📨 PROFESSIONAL WEBHOOK (Single Script)
+-- 📨 PROFESSIONAL WEBHOOK
 local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReason)
     UpdateGUI("💎 JACKPOT FOUND!")
     local jobId, placeId = game.JobId, game.PlaceId
@@ -363,7 +367,6 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     end
 
     table.insert(fields, {["name"] = "⏳ Server Age", ["value"] = "`" .. age .. "`", ["inline"] = true})
-    -- Dedicated Copy Block
     table.insert(fields, {["name"] = "👇 COPY JOIN SCRIPT 👇", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
     table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
 
@@ -383,17 +386,14 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 SMART RANDOM HOPPER (Sort Swap + Random)
+-- 🐇 FAST HOPPER (ASCENDING ONLY)
 local function serverHop()
     UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
+    Log("⚡ Fast Hop (Ascending)...")
     
-    -- Randomly swap between Ascending (Empty) and Descending (Full) to find more servers
-    local sortOrders = {"Desc", "Asc"}
-    local chosenSort = sortOrders[math.random(1, 2)]
+    -- FORCE ASCENDING to find smaller/faster servers
+    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
     
-    Log("🎲 Random Hop (" .. chosenSort .. ")...")
-    
-    local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=" .. chosenSort .. "&excludeFullGames=true&limit=100"
     local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
     
     if success and result and result.data then
@@ -412,6 +412,7 @@ local function serverHop()
         end
         
         if #validServers > 0 then
+            -- Pick random from the list to avoid always picking #1
             local randomServer = validServers[math.random(1, #validServers)]
             Log("🚀 Joining: " .. randomServer.id)
             TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id)
@@ -419,7 +420,6 @@ local function serverHop()
         end
     end
     
-    -- Retry
     Log("❌ Retry...")
     task.wait(2)
     serverHop() 
@@ -444,7 +444,7 @@ local function init()
     end
     
     local ageFormatted = formatAge(getServerAge())
-    UpdateGUI("🔍 SCANNING...", "0%", ageFormatted)
+    UpdateGUI("⚡ FAST SCAN...", "0%", ageFormatted)
     Log("Server Age: " .. ageFormatted)
     
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
