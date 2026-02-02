@@ -1,18 +1,22 @@
--- [[ 🚀 GOD MODE: FAST ASCENDING EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: MULTI-TARGET TELEPORT EDITION 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    -- 🔴 PASTE YOUR DISCORD WEBHOOK URL HERE:
+    -- 🔴 PASTE YOUR WEBHOOK HERE:
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     
-    PingRole = "@everyone", -- Role to ping
-    ScanDelay = {2, 3},     -- Reduced delay for faster hopping
+    -- 🖼️ BOT SETTINGS
+    BotName = "Event Tracker",
+    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=698153d0&is=69800250&hm=8e3fcf8bb9d64f2254fdd63493b084586bf0c6eb7ad373ff5c32f6e7c1016c5d&",
+
+    -- ⚡ SCAN SETTINGS
+    PingRole = "@everyone", 
+    ScanDelay = {2, 3},     -- Super fast scan
     SafeSlots = 1,          
     MinAIConfidence = 75,   
     HoldConfidence = 90,    
-    ReportInterval = 10800, 
-    BlacklistTime = 3600    
+    BlacklistTime = 3600    -- 1 Hour Friend Blacklist
 }
 
 -- 🔄 SERVICES
@@ -45,7 +49,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18)
 MainFrame.Position = UDim2.new(1, -280, 1, -200) 
 MainFrame.Size = UDim2.new(0, 260, 0, 190)
 MainFrame.BorderSizePixel = 3
-MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0)
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
@@ -59,7 +63,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⚡ FAST ASC SCAN..."
+StatusLabel.Text = "⚡ GOD SCANNING..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 StatusLabel.TextSize = 18
 
@@ -212,7 +216,7 @@ local function checkForFriends()
     return false, nil
 end
 
--- ⏳ LIVE EXPIRATION CALCULATOR (Discord Timestamp)
+-- ⏳ LIVE TIME STATUS
 local function getEventStatus()
     local currentTime = Lighting.ClockTime
     local status = "🟢 Unknown"
@@ -247,7 +251,6 @@ local function calculateAI()
     local reasons = {}
     local ageSeconds = getServerAge()
     
-    -- 1. SERVER AGE
     if ageSeconds > 3200 and ageSeconds < 5000 then 
         score = score + 40
         table.insert(reasons, "Prime Time")
@@ -256,7 +259,6 @@ local function calculateAI()
         table.insert(reasons, "Moon in ~15m")
     end
 
-    -- 2. LIGHTING CHECKS
     if Lighting.ClockTime > 20 or Lighting.ClockTime < 5 then
         score = score + 10
         if Lighting.Brightness > 0.6 then
@@ -265,7 +267,6 @@ local function calculateAI()
         end
     end
 
-    -- 3. PLAYER BEHAVIOR
     local seaCluster = 0
     local templeCluster = 0
     for _, p in pairs(Players:GetPlayers()) do
@@ -276,7 +277,6 @@ local function calculateAI()
             if distToTree < 1000 and pos.Y > 500 then templeCluster = templeCluster + 1 end
         end
     end
-    
     if seaCluster >= 3 then score = score + 15; table.insert(reasons, "Deep Sea Squad") end
     if templeCluster >= 1 then score = score + 30; table.insert(reasons, "V4 Temple Campers") end
 
@@ -288,57 +288,43 @@ local function scanAllEvents()
     local detectedEvents = {}
     local Sky = Lighting:FindFirstChild("Sky")
     
+    -- Check Full Moon
     if Sky and Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then table.insert(detectedEvents, {name = "🌕 FULL MOON", method = "Texture Match"})
     elseif Lighting:GetAttribute("IsFullMoon") then table.insert(detectedEvents, {name = "🌕 FULL MOON", method = "Attribute Check"}) end
     
-    if Workspace.Map:FindFirstChild("FrozenDimension") then table.insert(detectedEvents, {name = "❄️ LEVIATHAN GATE", method = "Gate Object"})
-    elseif Workspace.Map:FindFirstChild("Frozen Island") then table.insert(detectedEvents, {name = "❄️ FROZEN ISLAND", method = "Island Mesh"}) end
+    -- Check Islands & Gates (These have Locations)
+    if Workspace.Map:FindFirstChild("FrozenDimension") then 
+        local pos = Workspace.Map.FrozenDimension.Position
+        table.insert(detectedEvents, {name = "❄️ LEVIATHAN GATE", method = "Gate Object", pos = pos})
+    elseif Workspace.Map:FindFirstChild("Frozen Island") then 
+        local pos = Workspace.Map["Frozen Island"].Position 
+        table.insert(detectedEvents, {name = "❄️ FROZEN ISLAND", method = "Island Mesh", pos = pos}) 
+    end
     
-    if Workspace.Map:FindFirstChild("KitsuneShrine") then table.insert(detectedEvents, {name = "🦊 KITSUNE ISLAND", method = "Physical Island"}) end
-    if Workspace.Map:FindFirstChild("MysticIsland") then table.insert(detectedEvents, {name = "🏝️ MIRAGE ISLAND", method = "Physical Island"}) end
+    if Workspace.Map:FindFirstChild("KitsuneShrine") then 
+        local pos = Workspace.Map.KitsuneShrine.Position
+        table.insert(detectedEvents, {name = "🦊 KITSUNE ISLAND", method = "Physical Island", pos = pos})
+    end
+    
+    if Workspace.Map:FindFirstChild("MysticIsland") then 
+        local pos = Workspace.Map.MysticIsland.Position
+        table.insert(detectedEvents, {name = "🏝️ MIRAGE ISLAND", method = "Physical Island", pos = pos})
+    end
 
     return detectedEvents
 end
 
--- 📊 3-HOUR REPORT
-local function checkStatusReport()
-    local timeDiff = os.time() - currentStats.LastReport
-    if timeDiff >= CONFIG.ReportInterval then
-        Log("Sending 3-Hour Report...")
-        local uptimeHours = string.format("%.1f", (os.time() - currentStats.StartTime) / 3600)
-
-        local payload = {
-            ["username"] = "Tracker Stats",
-            ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
-            ["embeds"] = {{
-                ["title"] = "📈 System Status Report",
-                ["description"] = "The tracking system is active.",
-                ["color"] = 3447003,
-                ["fields"] = {
-                    {["name"] = "📡 Servers Scanned (3h)", ["value"] = "```" .. currentStats.TotalScanned .. " Servers```", ["inline"] = true},
-                    {["name"] = "⏱️ Total Uptime", ["value"] = "```" .. uptimeHours .. " Hours```", ["inline"] = true}
-                },
-                ["footer"] = { ["text"] = "Devansh || Event Tracker" },
-                ["timestamp"] = DateTime.now():ToIsoDate()
-            }}
-        }
-        
-        safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
-        
-        currentStats.TotalScanned = 0
-        currentStats.LastReport = os.time()
-        saveStats(currentStats)
-    end
-end
-
--- 📨 PROFESSIONAL WEBHOOK
+-- 📨 PROFESSIONAL WEBHOOK (MULTI-SCRIPT ENGINE)
 local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReason)
     UpdateGUI("💎 JACKPOT FOUND!")
     local jobId, placeId = game.JobId, game.PlaceId
     local age = formatAge(getServerAge())
     local status, discordTimestamp, gameHour = getEventStatus()
     
+    -- 1. MASTER JOIN SCRIPT (Always First)
     local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..placeId..', "'..jobId..'", game.Players.LocalPlayer)'
+    local directLink = "https://www.roblox.com/games/2753915549?jobId=" .. jobId
+    
     local titleText = "🌟 EVENT DETECTED"
     local color = 16766720 -- Gold
     
@@ -367,17 +353,33 @@ local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReas
     end
 
     table.insert(fields, {["name"] = "⏳ Server Age", ["value"] = "`" .. age .. "`", ["inline"] = true})
-    table.insert(fields, {["name"] = "👇 COPY JOIN SCRIPT 👇", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
+    
+    -- 📜 SCRIPT BLOCK 1: MASTER JOIN
+    table.insert(fields, {["name"] = "📜 1. JOIN SERVER (Required)", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
+    
+    -- 🏝️ SCRIPT BLOCKS 2+: INDIVIDUAL TELEPORTS
+    local tpCount = 1
+    for _, ev in pairs(eventsList) do
+        if ev.pos then
+            tpCount = tpCount + 1
+            local x, y, z = math.floor(ev.pos.X), math.floor(ev.pos.Y + 120), math.floor(ev.pos.Z) -- Safe Height
+            local tpScript = 'game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new('..x..', '..y..', '..z..')'
+            
+            table.insert(fields, {["name"] = "🏝️ " .. tpCount .. ". TP TO " .. ev.name, ["value"] = "```lua\n" .. tpScript .. "\n```", ["inline"] = false})
+        end
+    end
+
+    table.insert(fields, {["name"] = "🔗 Direct Link (PC Only)", ["value"] = "[Click to Join](" .. directLink .. ") *⚠️ Won't work on Mobile*", ["inline"] = false})
     table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
 
     local payload = {
-        ["username"] = "Event Tracker",
-        ["avatar_url"] = "https://i.imgur.com/4W8o9gI.png",
+        ["username"] = CONFIG.BotName,
+        ["avatar_url"] = CONFIG.BotAvatar,
         ["content"] = CONFIG.PingRole, 
         ["embeds"] = {{
             ["title"] = titleText,
             ["color"] = color,
-            ["thumbnail"] = { ["url"] = "https://i.imgur.com/4W8o9gI.png" },
+            ["thumbnail"] = { ["url"] = CONFIG.BotAvatar },
             ["fields"] = fields,
             ["footer"] = { ["text"] = "Devansh || Event Tracker" },
             ["timestamp"] = DateTime.now():ToIsoDate()
@@ -429,8 +431,6 @@ end
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
-    checkStatusReport()
-
     -- 1. FRIEND CHECK
     local hasFriend, friendName = checkForFriends()
     if hasFriend then
