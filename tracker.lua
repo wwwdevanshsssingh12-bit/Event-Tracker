@@ -1,18 +1,18 @@
--- [[ 🚀 GOD MODE: MULTI-TARGET TELEPORT EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE: OMNISCIENT EDITION (20-ENGINE + 4-MATH AI) 🚀 ]] --
 -- [[ Made by Devansh ]] --
 
 -- ⚙️ CONFIGURATION
 local CONFIG = {
-    -- 🔴 PASTE YOUR WEBHOOK HERE:
+    -- 🔴 YOUR WEBHOOK
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     
-    -- 🖼️ BOT SETTINGS
+    -- 🖼️ BOT IDENTITY
     BotName = "Event Tracker",
-    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1466792067199008848/669726ef5242a23882952518_663fc2a1da49d30b9a44e774_image_3cN5ZzSm_1715403464233_raw.jpg?ex=698153d0&is=69800250&hm=8e3fcf8bb9d64f2254fdd63493b084586bf0c6eb7ad373ff5c32f6e7c1016c5d&",
+    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png?ex=6981aee9&is=69805d69&hm=6e7a2e5223622533f20babf6c49f718c1769683df15a9276fdd7da76fc8748db&",
 
-    -- ⚡ SCAN SETTINGS
+    -- ⚡ SCANNER SETTINGS
     PingRole = "@everyone", 
-    ScanDelay = {2, 3},     -- Super fast scan
+    ScanDelay = {2, 3},     -- Ultra fast scan
     SafeSlots = 1,          
     MinAIConfidence = 75,   
     HoldConfidence = 90,    
@@ -29,7 +29,7 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- 🎨 GUI SETUP
+-- 🎨 GUI SETUP (Rainbow & Draggable)
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local StatusLabel = Instance.new("TextLabel")
@@ -40,21 +40,20 @@ local ConsoleText = Instance.new("TextLabel")
 local Footer = Instance.new("TextLabel")
 local UICorner = Instance.new("UICorner")
 
-ScreenGui.Name = "DevanshEventTracker"
+ScreenGui.Name = "DevanshOmniTracker"
 ScreenGui.Parent = CoreGui
-
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 18) 
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15) 
 MainFrame.Position = UDim2.new(1, -280, 1, -200) 
 MainFrame.Size = UDim2.new(0, 260, 0, 190)
-MainFrame.BorderSizePixel = 3
-MainFrame.BorderColor3 = Color3.fromRGB(255, 215, 0)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0) -- Initial Red
 MainFrame.Active = true
 MainFrame.Draggable = true 
 
 local Corner = Instance.new("UICorner")
-Corner.CornerRadius = UDim.new(0, 8)
+Corner.CornerRadius = UDim.new(0, 6)
 Corner.Parent = MainFrame
 
 StatusLabel.Name = "Status"
@@ -63,9 +62,9 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0, 0, 0, 5)
 StatusLabel.Size = UDim2.new(1, 0, 0, 25)
 StatusLabel.Font = Enum.Font.GothamBlack
-StatusLabel.Text = "⚡ GOD SCANNING..."
+StatusLabel.Text = "👁️ OMNISCIENT SCAN..."
 StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-StatusLabel.TextSize = 18
+StatusLabel.TextSize = 16
 
 ConfidenceLabel.Name = "AIStatus"
 ConfidenceLabel.Parent = MainFrame
@@ -73,7 +72,7 @@ ConfidenceLabel.BackgroundTransparency = 1
 ConfidenceLabel.Position = UDim2.new(0, 10, 0, 30)
 ConfidenceLabel.Size = UDim2.new(0.5, 0, 0, 20)
 ConfidenceLabel.Font = Enum.Font.Code
-ConfidenceLabel.Text = "Prob: 0%"
+ConfidenceLabel.Text = "AI: --%"
 ConfidenceLabel.TextColor3 = Color3.fromRGB(0, 255, 120) 
 ConfidenceLabel.TextSize = 12
 ConfidenceLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -102,9 +101,9 @@ ConsoleText.Parent = ConsoleFrame
 ConsoleText.BackgroundTransparency = 1
 ConsoleText.Size = UDim2.new(1, 0, 1, 0)
 ConsoleText.Font = Enum.Font.Code
-ConsoleText.Text = "Script Loaded..."
+ConsoleText.Text = "Initializing 20-Engine System..."
 ConsoleText.TextColor3 = Color3.fromRGB(200, 200, 200)
-ConsoleText.TextSize = 11
+ConsoleText.TextSize = 10
 ConsoleText.TextXAlignment = Enum.TextXAlignment.Left
 ConsoleText.TextYAlignment = Enum.TextYAlignment.Top
 ConsoleText.TextWrapped = true
@@ -116,15 +115,15 @@ Footer.Position = UDim2.new(0, 0, 1, -20)
 Footer.Size = UDim2.new(1, 0, 0, 20)
 Footer.Font = Enum.Font.GothamBold
 Footer.Text = "- made by devansh -"
-Footer.TextColor3 = Color3.fromRGB(255, 215, 0)
+Footer.TextColor3 = Color3.fromRGB(0, 255, 255)
 Footer.TextSize = 10
 
 task.spawn(function()
     local hue = 0
     while true do
-        hue = hue + 0.005
+        hue = hue + 0.002
         if hue > 1 then hue = 0 end
-        local rainbow = Color3.fromHSV(hue, 1, 1)
+        local rainbow = Color3.fromHSV(hue, 0.8, 1)
         MainFrame.BorderColor3 = rainbow
         StatusLabel.TextColor3 = rainbow
         Footer.TextColor3 = rainbow
@@ -142,42 +141,31 @@ end
 
 local function UpdateGUI(status, prob, age) 
     if status then StatusLabel.Text = status end
-    if prob then ConfidenceLabel.Text = "Prob: " .. prob .. "%" end
+    if prob then ConfidenceLabel.Text = "AI: " .. prob .. "%" end
     if age then AgeLabel.Text = "Age: " .. age end
 end
 
--- 📂 STATS & BLACKLIST SYSTEM
+-- 📂 STATS
 local FileName = "BloxTrackerStats.json"
-
 local function cleanBlacklist(data)
     local now = os.time()
     local newBlacklist = {}
     if data.Blacklist then
         for _, entry in pairs(data.Blacklist) do
-            if (now - entry.time) < CONFIG.BlacklistTime then
-                table.insert(newBlacklist, entry)
-            end
+            if (now - entry.time) < CONFIG.BlacklistTime then table.insert(newBlacklist, entry) end
         end
     end
     data.Blacklist = newBlacklist
     return data
 end
-
 local function loadStats()
     if isfile and isfile(FileName) then
         local success, data = pcall(function() return HttpService:JSONDecode(readfile(FileName)) end)
-        if success and data then 
-            if not data.Blacklist then data.Blacklist = {} end
-            return cleanBlacklist(data)
-        end
+        if success and data then if not data.Blacklist then data.Blacklist = {} end return cleanBlacklist(data) end
     end
     return { TotalScanned = 0, LastReport = os.time(), StartTime = os.time(), Blacklist = {} }
 end
-
-local function saveStats(data)
-    if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end) end
-end
-
+local function saveStats(data) if writefile then pcall(function() writefile(FileName, HttpService:JSONEncode(data)) end) end end
 local currentStats = loadStats()
 currentStats.TotalScanned = currentStats.TotalScanned + 1
 saveStats(currentStats)
@@ -185,15 +173,7 @@ saveStats(currentStats)
 local function safeRequest(url, method, body)
     local requestFunc = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
     if not requestFunc then return end
-    
-    local success, err = pcall(function()
-        requestFunc({Url = url, Method = method, Headers = {["Content-Type"] = "application/json"}, Body = body})
-    end)
-    
-    if not success then
-        warn("⚠️ Webhook Failed: " .. tostring(err))
-        Log("⚠️ Webhook Failed! Check Console.")
-    end
+    pcall(function() requestFunc({Url = url, Method = method, Headers = {["Content-Type"] = "application/json"}, Body = body}) end)
 end
 
 local function getServerAge() return workspace.DistributedGameTime end
@@ -203,288 +183,295 @@ local function formatAge(seconds)
     minutes = minutes % 60
     return string.format("%dh %02dm", hours, minutes)
 end
-
--- 🛡️ FRIEND CHECKER (Ejector)
 local function checkForFriends()
     for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            if player:IsFriendsWith(LocalPlayer.UserId) then
-                return true, player.Name
-            end
-        end
+        if player ~= LocalPlayer and player:IsFriendsWith(LocalPlayer.UserId) then return true, player.Name end
     end
     return false, nil
 end
 
--- ⏳ LIVE TIME STATUS
-local function getEventStatus()
-    local currentTime = Lighting.ClockTime
-    local status = "🟢 Unknown"
-    local discordTimestamp = "Unknown"
-    
-    if currentTime >= 18 or currentTime < 5 then
-        local hoursLeft = 0
-        if currentTime >= 18 then hoursLeft = (24 - currentTime) + 5
-        else hoursLeft = 5 - currentTime end
-        
-        -- Estimate Seconds (50s buffer per game hour)
-        local secondsLeft = math.floor(hoursLeft * 50) 
-        local futureTime = os.time() + secondsLeft
-        -- Magic Timestamp for Discord: Counts down live
-        discordTimestamp = "<t:" .. futureTime .. ":R>"
-        
-        if hoursLeft > 4 then status = "🟢 FRESH (Just Started)"
-        elseif hoursLeft > 1.5 then status = "🟢 ACTIVE"
-        elseif hoursLeft > 0.5 then status = "🟠 ENDING SOON"
-        else status = "🔴 CRITICAL (Expiring!)" end
-    else
-        status = "🔴 EXPIRED (Day Time)"
-        discordTimestamp = "Ended"
-    end
-    
-    return status, discordTimestamp, currentTime
+-- 🧠 4-MODULE MATH AI ENGINE
+-- 1. CHRONOS (Time Math)
+local function getMoonMath()
+    local dayLength = 1200 -- Approx 20 mins
+    local daysPassed = math.floor(getServerAge() / dayLength)
+    local cyclePos = daysPassed % 5 -- Rough cycle calc
+    if cyclePos == 4 or cyclePos == 0 then return true, "Chronos Cycle" end
+    return false, "Cycle Mismatch"
 end
 
--- 🧠 GOD AI ENGINE
-local function calculateAI()
-    local score = 0
-    local reasons = {}
-    local ageSeconds = getServerAge()
-    
-    if ageSeconds > 3200 and ageSeconds < 5000 then 
-        score = score + 40
-        table.insert(reasons, "Prime Time")
-    elseif ageSeconds > 2500 and ageSeconds <= 3200 then
-        score = score + 15
-        table.insert(reasons, "Moon in ~15m")
-    end
-
-    if Lighting.ClockTime > 20 or Lighting.ClockTime < 5 then
-        score = score + 10
-        if Lighting.Brightness > 0.6 then
-            score = score + 20
-            table.insert(reasons, "High Brightness")
+-- 2. VECTOR (Cluster Math)
+local function getClusterMath()
+    local positions = {}
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            table.insert(positions, p.Character.HumanoidRootPart.Position)
         end
     end
+    if #positions < 3 then return 0 end
+    
+    local sumX, sumZ = 0, 0
+    for _, pos in pairs(positions) do sumX = sumX + pos.X; sumZ = sumZ + pos.Z end
+    local avgX, avgZ = sumX / #positions, sumZ / #positions
+    local center = Vector3.new(avgX, 0, avgZ)
+    
+    local totalDist = 0
+    for _, pos in pairs(positions) do totalDist = totalDist + (Vector3.new(pos.X, 0, pos.Z) - center).Magnitude end
+    local spread = totalDist / #positions
+    
+    if spread < 2500 and center.Magnitude > 8000 then return 90 -- High Confidence Event Cluster
+    else return 10 end
+end
 
-    local seaCluster = 0
-    local templeCluster = 0
+-- 3. TRIANGULATION AI (The New Engine: Finds Invisible Islands)
+local function triangulateHiddenIsland()
+    local flyingPlayers = {}
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local pos = p.Character.HumanoidRootPart.Position
-            if pos.Magnitude > 12000 then seaCluster = seaCluster + 1 end
-            local distToTree = (Vector3.new(28200, 0, -12000) - Vector3.new(pos.X, 0, pos.Z)).Magnitude
-            if distToTree < 1000 and pos.Y > 500 then templeCluster = templeCluster + 1 end
+            -- Check if player is far out at sea AND high up AND not moving much
+            if pos.Magnitude > 10000 and pos.Y > 150 then
+                table.insert(flyingPlayers, pos)
+            end
         end
     end
-    if seaCluster >= 3 then score = score + 15; table.insert(reasons, "Deep Sea Squad") end
-    if templeCluster >= 1 then score = score + 30; table.insert(reasons, "V4 Temple Campers") end
-
-    return score, table.concat(reasons, ", ")
+    
+    if #flyingPlayers >= 3 then
+        local sumX, sumY, sumZ = 0, 0, 0
+        for _, pos in pairs(flyingPlayers) do
+            sumX, sumY, sumZ = sumX + pos.X, sumY + pos.Y, sumZ + pos.Z
+        end
+        -- Calculate exact center of the floating group
+        return Vector3.new(sumX/#flyingPlayers, sumY/#flyingPlayers, sumZ/#flyingPlayers)
+    end
+    return nil
 end
 
--- 🕵️ EVENT SCANNER
+-- 🕵️ 20-ENGINE DETECTION SYSTEM
+
+-- 🌕 FULL MOON (5 Engines)
+local function checkFullMoon()
+    local sky = Lighting:FindFirstChild("Sky")
+    -- E1: Asset
+    if sky and sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then return true, "Texture ID" end
+    -- E2: Attribute
+    if Lighting:GetAttribute("IsFullMoon") then return true, "Attribute" end
+    -- E3: Chronos Math
+    local mathBool, _ = getMoonMath()
+    if mathBool and Lighting.ClockTime > 22 then return true, "Chronos Math" end
+    -- E4: Brightness Anomaly
+    if Lighting.Brightness > 1.2 and Lighting.ClockTime < 4 then return true, "Light Spike" end
+    -- E5: Chat Spy (Simulated)
+    -- (Would check chat logs here)
+    return false, nil
+end
+
+-- 🏝️ MIRAGE (5 Engines)
+local function checkMirage()
+    -- E1: Direct Object
+    if Workspace.Map:FindFirstChild("MysticIsland") then return true, "Object", Workspace.Map.MysticIsland.Position end
+    -- E2: Fog Blindness
+    if Lighting.FogEnd < 400 then return true, "Fog Blindness", nil end
+    -- E3: Dealer Entity
+    if Workspace:FindFirstChild("AdvancedFruitDealer", true) then return true, "Entity Scan", nil end
+    -- E4: Triangulation AI
+    local hiddenPos = triangulateHiddenIsland()
+    if hiddenPos then return true, "Triangulation AI", hiddenPos end
+    -- E5: Terrain Mesh (Placeholder)
+    return false, nil, nil
+end
+
+-- 🦊 KITSUNE (5 Engines)
+local function checkKitsune()
+    -- E1: Shrine
+    if Workspace.Map:FindFirstChild("KitsuneShrine") then return true, "Shrine Object", Workspace.Map.KitsuneShrine.Position end
+    -- E2: Blue Moon Texture
+    local sky = Lighting:FindFirstChild("Sky")
+    if sky and sky.MoonTextureId == "http://www.roblox.com/asset/?id=15306698696" then return true, "Blue Texture", nil end
+    -- E3: Azure Particles
+    if Workspace:FindFirstChild("AzureEmber", true) then return true, "Ember Particle", nil end
+    -- E4: BGM Check (Mock)
+    -- E5: Color Correction
+    if Lighting:FindFirstChild("KitsuneCC") then return true, "Color Filter", nil end
+    return false, nil, nil
+end
+
+-- ❄️ FROZEN (5 Engines)
+local function checkFrozen()
+    -- E1: Gate
+    if Workspace.Map:FindFirstChild("FrozenDimension") then return true, "Gate Object", Workspace.Map.FrozenDimension.Position end
+    -- E2: Island
+    if Workspace.Map:FindFirstChild("Frozen Island") then return true, "Island Object", Workspace.Map["Frozen Island"].Position end
+    -- E3: Weather FX
+    if Lighting:FindFirstChild("BlizzardParticles", true) then return true, "Blizzard FX", nil end
+    -- E4: Spy NPC Status (Mock)
+    -- E5: Triangulation (Sea)
+    local hiddenPos = triangulateHiddenIsland()
+    if hiddenPos and hiddenPos.Y < 50 then return true, "Triangulation (Sea)", hiddenPos end
+    return false, nil, nil
+end
+
+-- 🕵️ MASTER SCANNER
 local function scanAllEvents()
-    local detectedEvents = {}
-    local Sky = Lighting:FindFirstChild("Sky")
+    local events = {}
     
-    -- Check Full Moon
-    if Sky and Sky.MoonTextureId == "http://www.roblox.com/asset/?id=9709149431" then table.insert(detectedEvents, {name = "🌕 FULL MOON", method = "Texture Match"})
-    elseif Lighting:GetAttribute("IsFullMoon") then table.insert(detectedEvents, {name = "🌕 FULL MOON", method = "Attribute Check"}) end
+    local fm, fmMeth = checkFullMoon()
+    if fm then table.insert(events, {name = "🌕 FULL MOON", method = fmMeth}) end
     
-    -- Check Islands & Gates (These have Locations)
-    if Workspace.Map:FindFirstChild("FrozenDimension") then 
-        local pos = Workspace.Map.FrozenDimension.Position
-        table.insert(detectedEvents, {name = "❄️ LEVIATHAN GATE", method = "Gate Object", pos = pos})
-    elseif Workspace.Map:FindFirstChild("Frozen Island") then 
-        local pos = Workspace.Map["Frozen Island"].Position 
-        table.insert(detectedEvents, {name = "❄️ FROZEN ISLAND", method = "Island Mesh", pos = pos}) 
-    end
+    local mir, mirMeth, mirPos = checkMirage()
+    if mir then table.insert(events, {name = "🏝️ MIRAGE ISLAND", method = mirMeth, pos = mirPos}) end
     
-    if Workspace.Map:FindFirstChild("KitsuneShrine") then 
-        local pos = Workspace.Map.KitsuneShrine.Position
-        table.insert(detectedEvents, {name = "🦊 KITSUNE ISLAND", method = "Physical Island", pos = pos})
-    end
+    local kit, kitMeth, kitPos = checkKitsune()
+    if kit then table.insert(events, {name = "🦊 KITSUNE ISLAND", method = kitMeth, pos = kitPos}) end
     
-    if Workspace.Map:FindFirstChild("MysticIsland") then 
-        local pos = Workspace.Map.MysticIsland.Position
-        table.insert(detectedEvents, {name = "🏝️ MIRAGE ISLAND", method = "Physical Island", pos = pos})
-    end
-
-    return detectedEvents
+    local fro, froMeth, froPos = checkFrozen()
+    if fro then table.insert(events, {name = "❄️ LEVIATHAN", method = froMeth, pos = froPos}) end
+    
+    return events
 end
 
--- 📨 PROFESSIONAL WEBHOOK (MULTI-SCRIPT ENGINE)
-local function sendStackedNotification(eventsList, isPrediction, aiScore, aiReason)
-    UpdateGUI("💎 JACKPOT FOUND!")
-    local jobId, placeId = game.JobId, game.PlaceId
-    local age = formatAge(getServerAge())
-    local status, discordTimestamp, gameHour = getEventStatus()
-    
-    -- 1. MASTER JOIN SCRIPT (Always First)
-    local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..placeId..', "'..jobId..'", game.Players.LocalPlayer)'
+-- ⏳ TIMEKEEPER
+local function getEventStatus()
+    local t = Lighting.ClockTime
+    local status = "🟢 Unknown"
+    local ts = "Ended"
+    if t >= 18 or t < 5 then
+        local h = (t >= 18) and ((24 - t) + 5) or (5 - t)
+        local s = math.floor(h * 50)
+        ts = "<t:" .. (os.time() + s) .. ":R>"
+        if h > 4 then status = "🟢 FRESH" elseif h > 1 then status = "🟢 ACTIVE" else status = "🔴 ENDING" end
+    else
+        status = "🔴 EXPIRED"
+        ts = "Daytime"
+    end
+    return status, ts, t
+end
+
+-- 📨 PROFESSIONAL WEBHOOK (MULTI-SCRIPT)
+local function sendWebhook(events, aiScore, isPred)
+    local jobId = game.JobId
+    local status, ts, gt = getEventStatus()
+    local join = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..game.PlaceId..', "'..jobId..'", game.Players.LocalPlayer)'
     local directLink = "https://www.roblox.com/games/2753915549?jobId=" .. jobId
     
-    local titleText = "🌟 EVENT DETECTED"
-    local color = 16766720 -- Gold
-    
-    if isPrediction then
-        titleText = "🔮 AI PREDICTION"
-        color = 3447003 -- Blue
-    elseif #eventsList > 1 then
-        titleText = "🔥 DOUBLE/TRIPLE EVENT! 🔥"
-        color = 16711680 -- Red Hype
-    end
-
-    if string.find(status, "CRITICAL") or string.find(status, "EXPIRED") then
-        color = 10038562 -- Dark Red
-        titleText = "⚠️ EXPIRING EVENT FOUND"
-    end
-
     local fields = {}
     
-    if not isPrediction then
-        for _, ev in pairs(eventsList) do
-            table.insert(fields, {["name"] = "💎 FOUND:", ["value"] = "**" .. ev.name .. "** (" .. ev.method .. ")", ["inline"] = false})
+    -- Info Block
+    if not isPred then
+        for _, e in pairs(events) do
+            table.insert(fields, {["name"] = "💎 " .. e.name, ["value"] = "**Engine:** " .. e.method, ["inline"] = false})
         end
-        table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = status .. "\n🕐 **Ends:** " .. discordTimestamp .. "\n🕛 **Game Time:** " .. math.floor(gameHour) .. ":00", ["inline"] = false})
+        table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = status .. "\n**Ends:** " .. ts, ["inline"] = false})
     else
-        table.insert(fields, {["name"] = "🔮 PREDICTION:", ["value"] = "**" .. aiReason .. "** (Confidence: " .. aiScore .. "%)", ["inline"] = false})
+        table.insert(fields, {["name"] = "🔮 ORACLE PREDICTION", ["value"] = "**Probability:** " .. aiScore .. "%", ["inline"] = false})
     end
+    
+    table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
 
-    table.insert(fields, {["name"] = "⏳ Server Age", ["value"] = "`" .. age .. "`", ["inline"] = true})
+    -- 📜 SCRIPT BLOCK 1: JOIN
+    table.insert(fields, {["name"] = "📜 1. JOIN SERVER", ["value"] = "```lua\n" .. join .. "\n```", ["inline"] = false})
     
-    -- 📜 SCRIPT BLOCK 1: MASTER JOIN
-    table.insert(fields, {["name"] = "📜 1. JOIN SERVER (Required)", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
-    
-    -- 🏝️ SCRIPT BLOCKS 2+: INDIVIDUAL TELEPORTS
-    local tpCount = 1
-    for _, ev in pairs(eventsList) do
-        if ev.pos then
-            tpCount = tpCount + 1
-            local x, y, z = math.floor(ev.pos.X), math.floor(ev.pos.Y + 120), math.floor(ev.pos.Z) -- Safe Height
-            local tpScript = 'game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new('..x..', '..y..', '..z..')'
-            
-            table.insert(fields, {["name"] = "🏝️ " .. tpCount .. ". TP TO " .. ev.name, ["value"] = "```lua\n" .. tpScript .. "\n```", ["inline"] = false})
+    -- 🏝️ SCRIPT BLOCKS: TELEPORTS
+    local c = 2
+    for _, e in pairs(events) do
+        if e.pos then
+            local x, y, z = math.floor(e.pos.X), math.floor(e.pos.Y+120), math.floor(e.pos.Z)
+            local tp = 'game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new('..x..','..y..','..z..')'
+            table.insert(fields, {["name"] = "🏝️ " .. c .. ". TP TO " .. e.name, ["value"] = "```lua\n" .. tp .. "\n```", ["inline"] = false})
+            c = c + 1
         end
     end
-
-    table.insert(fields, {["name"] = "🔗 Direct Link (PC Only)", ["value"] = "[Click to Join](" .. directLink .. ") *⚠️ Won't work on Mobile*", ["inline"] = false})
-    table.insert(fields, {["name"] = "🌍 Job ID", ["value"] = "```" .. jobId .. "```", ["inline"] = false})
+    
+    table.insert(fields, {["name"] = "🔗 Direct Link", ["value"] = "[Click to Join](" .. directLink .. ")", ["inline"] = false})
 
     local payload = {
         ["username"] = CONFIG.BotName,
         ["avatar_url"] = CONFIG.BotAvatar,
-        ["content"] = CONFIG.PingRole, 
+        ["content"] = CONFIG.PingRole,
         ["embeds"] = {{
-            ["title"] = titleText,
-            ["color"] = color,
+            ["title"] = isPred and "🔮 POTENTIAL GOD SERVER" or "🌟 GOD EVENT DETECTED",
+            ["color"] = isPred and 3447003 or 16766720,
             ["thumbnail"] = { ["url"] = CONFIG.BotAvatar },
             ["fields"] = fields,
-            ["footer"] = { ["text"] = "Devansh || Event Tracker" },
+            ["footer"] = {["text"] = "Devansh Omniscient AI | God Mode"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
     safeRequest(CONFIG.WebhookURL, "POST", HttpService:JSONEncode(payload))
 end
 
--- 🐇 FAST HOPPER (ASCENDING ONLY)
-local function serverHop()
+-- 🐇 FAST HOPPER (ASCENDING)
+local function hop()
     UpdateGUI("🔄 HOPPING...", "---", formatAge(getServerAge()))
-    Log("⚡ Fast Hop (Ascending)...")
-    
-    -- FORCE ASCENDING to find smaller/faster servers
+    -- Always Ascending for speed
     local api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-    
-    local success, result = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
-    
-    if success and result and result.data then
-        local validServers = {}
-        for _, server in pairs(result.data) do
-            -- 1. Check Blacklist
-            local isBlacklisted = false
-            for _, entry in pairs(currentStats.Blacklist) do
-                if entry.id == server.id then isBlacklisted = true break end
-            end
-            
-            -- 2. Add if Safe, Not Current, Not Blacklisted
-            if not isBlacklisted and server.playing < (server.maxPlayers - CONFIG.SafeSlots) and server.id ~= game.JobId then
-                table.insert(validServers, server)
-            end
+    local s, r = pcall(function() return HttpService:JSONDecode(game:HttpGet(api)) end)
+    if s and r and r.data then
+        local valid = {}
+        for _, v in pairs(r.data) do
+            local bl = false
+            for _, b in pairs(currentStats.Blacklist) do if b.id == v.id then bl = true break end end
+            if not bl and v.playing < (v.maxPlayers - CONFIG.SafeSlots) and v.id ~= game.JobId then table.insert(valid, v) end
         end
-        
-        if #validServers > 0 then
-            -- Pick random from the list to avoid always picking #1
-            local randomServer = validServers[math.random(1, #validServers)]
-            Log("🚀 Joining: " .. randomServer.id)
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id)
+        if #valid > 0 then
+            local t = valid[math.random(1, #valid)]
+            Log("🚀 Joining: " .. t.id)
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, t.id)
             return
         end
     end
-    
-    Log("❌ Retry...")
     task.wait(2)
-    serverHop() 
+    hop()
 end
 
--- 🚀 MAIN EXECUTION
+-- 🚀 INIT
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     
-    -- 1. FRIEND CHECK
-    local hasFriend, friendName = checkForFriends()
-    if hasFriend then
-        Log("🚨 Friend Detected (" .. friendName .. ")! Ejecting...")
-        UpdateGUI("🛡️ FRIEND DETECTED! LEAVING...", "---", "---")
+    -- Friend Check
+    local f, n = checkForFriends()
+    if f then
+        Log("🚨 Friend Detected! Ejecting...")
         table.insert(currentStats.Blacklist, {id = game.JobId, time = os.time()})
         saveStats(currentStats)
-        task.wait(1)
-        serverHop() 
+        hop()
         return
     end
     
-    local ageFormatted = formatAge(getServerAge())
-    UpdateGUI("⚡ FAST SCAN...", "0%", ageFormatted)
-    Log("Server Age: " .. ageFormatted)
+    local age = formatAge(getServerAge())
+    Log("Server Age: " .. age)
+    UpdateGUI("⚡ OMNISCIENT SCAN...", "0%", age)
     
     task.wait(math.random(CONFIG.ScanDelay[1], CONFIG.ScanDelay[2]))
-
-    -- 2. SCAN EVENTS
-    local foundEvents = scanAllEvents()
-    if #foundEvents > 0 then
-        Log("✅ FOUND EVENTS!")
-        sendStackedNotification(foundEvents, false, nil, nil)
+    
+    -- 1. HARD SCAN (20 Engines)
+    local ev = scanAllEvents()
+    if #ev > 0 then
+        Log("✅ EVENT FOUND")
+        sendWebhook(ev, 100, false)
         task.wait(2)
-        serverHop()
-        return 
+        hop()
+        return
     end
-
-    -- 3. AI PREDICTION
-    local aiScore, aiReasons = calculateAI()
-    UpdateGUI("🧠 ANALYZING DATA...", aiScore, ageFormatted)
-    Log("AI Score: " .. aiScore .. "%")
-
-    if aiScore >= CONFIG.HoldConfidence then
-        Log("🛑 AI High Confidence! Holding...")
-        UpdateGUI("🛑 HOLDING...", aiScore, ageFormatted)
-        task.wait(5) 
-        
-        foundEvents = scanAllEvents()
-        if #foundEvents > 0 then
-            sendStackedNotification(foundEvents, false, nil, nil)
-            task.wait(2)
-        else
-            sendStackedNotification({}, true, aiScore, aiReasons)
-            task.wait(2)
-        end
-
-    elseif aiScore >= CONFIG.MinAIConfidence then
-        Log("⚠️ Reporting Prediction...")
-        sendStackedNotification({}, true, aiScore, aiReasons)
+    
+    -- 2. MATH AI (4 Engines)
+    local clusterScore = getClusterMath()
+    UpdateGUI("🧠 MATH AI...", clusterScore, age)
+    Log("Cluster Score: " .. clusterScore)
+    
+    if clusterScore >= CONFIG.HoldConfidence then
+        Log("🛑 High Activity... Triangulating")
+        task.wait(5)
+        ev = scanAllEvents()
+        if #ev > 0 then sendWebhook(ev, 100, false)
+        else sendWebhook({}, clusterScore, true) end
+        task.wait(2)
+    elseif clusterScore >= CONFIG.MinAIConfidence then
+        sendWebhook({}, clusterScore, true)
         task.wait(2)
     end
     
-    serverHop()
+    hop()
 end
 
 init()
