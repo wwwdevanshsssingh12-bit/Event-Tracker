@@ -1,6 +1,6 @@
--- [[ 🚀 GOD MODE V13: CUSTOMIZED EDITION 🚀 ]] --
+-- [[ 🚀 GOD MODE V15: TERMUX ULTIMATE 🚀 ]] --
 -- [[ REWRITTEN BY DEVANSH | STATUS: UNPATCHED ]] --
--- [[ LOGIC: 90% CONFIRM | 75% HOLD ]] --
+-- [[ FEATURES: STRICT ACTIVE ONLY | DYNAMIC TIMESTAMPS | HACKER UI ]] --
 
 ---------------------------------------------------------------------------------------------------
 -- [1] CONFIGURATION
@@ -10,17 +10,17 @@ local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     
     -- 🤖 BOT IDENTITY
-    BotName = "Event Tracker V13",
-    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png?ex=6981aee9&is=69805d69&hm=6e7a2e5223622533f20babf6c49f718c1769683df15a9276fdd7da76fc8748db&",
+    BotName = "Termux Tracker V15",
+    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png",
     PingRole = "@everyone",
 
     -- ⚙️ THRESHOLDS
-    MinConfidence = 90,   -- SCORE >= 90: Instantly send Webhook (Confirmed)
-    HoldConfidence = 75,  -- SCORE 75-89: Wait 5s and Re-scan (Maybe/Ghost Check)
+    MinConfidence = 90,   -- SCORE >= 90: Instantly send Webhook
+    HoldConfidence = 75,  -- SCORE 75-89: Hold and Re-scan
     
     -- ⚡ TIMERS
-    ScanDelay = 0.5,      -- Time between engine ticks
-    HoldTime = 5,         -- Duration to hold if "Maybe" is detected
+    ScanDelay = 0.2,      -- Ultra fast ticks
+    HoldTime = 5,         
 }
 
 ---------------------------------------------------------------------------------------------------
@@ -34,374 +34,357 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
+local VirtualUser = game:GetService("VirtualUser")
 
--- Prevent Idle Kick
+-- Anti-Idle (Keep script running)
 LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
 
 ---------------------------------------------------------------------------------------------------
--- [3] STATE MANAGEMENT
+-- [3] STATE & GUI (HEAVY TERMUX STYLE)
 ---------------------------------------------------------------------------------------------------
-local State = {
-    EventStack = {},
-    IsHolding = false,
-    StartTime = os.clock(),
-    LogHistory = {}
-}
+local State = { EventStack = {}, IsHolding = false, StartTime = os.clock() }
 
----------------------------------------------------------------------------------------------------
--- [4] GUI SYSTEM (COMPACT, MOVABLE, RAINBOW)
----------------------------------------------------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshGodModeV13"
-ScreenGui.ResetOnSpawn = false
+ScreenGui.Name = "DevanshTermuxV15"
 if gethui then ScreenGui.Parent = gethui() else ScreenGui.Parent = CoreGui end
 
--- Main Container
+-- 1. Main Terminal Window
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
+MainFrame.Name = "Terminal"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 15) -- Professional Dark
-MainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)    -- Centered
-MainFrame.Size = UDim2.new(0, 300, 0, 200)              -- Compact Size
-MainFrame.BorderSizePixel = 2
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5) -- Pure Black
+MainFrame.Position = UDim2.new(0.5, -180, 0.5, -120)
+MainFrame.Size = UDim2.new(0, 360, 0, 240)
+MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
-MainFrame.Draggable = true -- ✅ MOVABLE ENABLED
+MainFrame.Draggable = true
 
--- Top Bar (Status)
-local TopBar = Instance.new("Frame")
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-TopBar.Size = UDim2.new(1, 0, 0, 25)
-TopBar.BorderSizePixel = 0
+-- Curved Corners
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = MainFrame
 
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Parent = TopBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 8, 0, 0)
-TitleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-TitleLabel.Font = Enum.Font.GothamBlack
-TitleLabel.Text = "⚡ EVENT TRACKER V13"
-TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 11
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- Neon Border Stroke
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 1.5
+UIStroke.Transparency = 0.2
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Color = Color3.fromRGB(0, 255, 100) -- Matrix Green
 
-local TimerLabel = Instance.new("TextLabel")
-TimerLabel.Parent = TopBar
-TimerLabel.BackgroundTransparency = 1
-TimerLabel.Position = UDim2.new(0.6, 0, 0, 0)
-TimerLabel.Size = UDim2.new(0.4, -8, 1, 0)
-TimerLabel.Font = Enum.Font.Code
-TimerLabel.Text = "00:00"
-TimerLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-TimerLabel.TextSize = 10
-TimerLabel.TextXAlignment = Enum.TextXAlignment.Right
+-- 2. Terminal Header (Top Bar)
+local Header = Instance.new("Frame")
+Header.Parent = MainFrame
+Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Header.Size = UDim2.new(1, 0, 0, 25)
+Header.BorderSizePixel = 0
 
--- Console Area (Working)
-local ConsoleBG = Instance.new("Frame")
-ConsoleBG.Parent = MainFrame
-ConsoleBG.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-ConsoleBG.Position = UDim2.new(0, 5, 0, 30)
-ConsoleBG.Size = UDim2.new(1, -10, 1, -50)
-ConsoleBG.BorderSizePixel = 1
-ConsoleBG.BorderColor3 = Color3.fromRGB(40, 40, 40)
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 10)
+HeaderCorner.Parent = Header
 
-local ConsoleScroll = Instance.new("ScrollingFrame")
-ConsoleScroll.Parent = ConsoleBG
-ConsoleScroll.BackgroundTransparency = 1
-ConsoleScroll.Size = UDim2.new(1, -5, 1, -5)
-ConsoleScroll.Position = UDim2.new(0, 5, 0, 2)
-ConsoleScroll.ScrollBarThickness = 2
-ConsoleScroll.CanvasSize = UDim2.new(0, 0, 0, 0) 
-ConsoleScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+-- Fix bottom corners of header to be square
+local HeaderFix = Instance.new("Frame")
+HeaderFix.Parent = Header
+HeaderFix.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+HeaderFix.BorderSizePixel = 0
+HeaderFix.Size = UDim2.new(1, 0, 0, 10)
+HeaderFix.Position = UDim2.new(0, 0, 1, -10)
+
+local TerminalTitle = Instance.new("TextLabel")
+TerminalTitle.Parent = Header
+TerminalTitle.BackgroundTransparency = 1
+TerminalTitle.Position = UDim2.new(0, 10, 0, 0)
+TerminalTitle.Size = UDim2.new(1, -20, 1, 0)
+TerminalTitle.Font = Enum.Font.Code
+TerminalTitle.Text = "root@devansh:~# ./blox_tracker_v15.sh"
+TerminalTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+TerminalTitle.TextSize = 11
+TerminalTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 3. Console Display
+local ConsoleArea = Instance.new("ScrollingFrame")
+ConsoleArea.Parent = MainFrame
+ConsoleArea.BackgroundTransparency = 1
+ConsoleArea.Position = UDim2.new(0, 10, 0, 35)
+ConsoleArea.Size = UDim2.new(1, -20, 1, -55)
+ConsoleArea.ScrollBarThickness = 2
+ConsoleArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 0)
 
 local LogLabel = Instance.new("TextLabel")
-LogLabel.Parent = ConsoleScroll
+LogLabel.Parent = ConsoleArea
 LogLabel.BackgroundTransparency = 1
 LogLabel.Size = UDim2.new(1, 0, 0, 0)
 LogLabel.AutomaticSize = Enum.AutomaticSize.Y
 LogLabel.Font = Enum.Font.Code
-LogLabel.Text = "" 
-LogLabel.TextColor3 = Color3.fromRGB(0, 255, 120) -- Matrix Green
+LogLabel.Text = "" -- Logs populate here
+LogLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Terminal Green
 LogLabel.TextSize = 10
 LogLabel.TextXAlignment = Enum.TextXAlignment.Left
 LogLabel.TextYAlignment = Enum.TextYAlignment.Top
 LogLabel.TextWrapped = true
+LogLabel.RichText = true -- Allows colored logs
 
--- Footer
-local Footer = Instance.new("TextLabel")
-Footer.Parent = MainFrame
-Footer.BackgroundTransparency = 1
-Footer.Position = UDim2.new(0, 0, 1, -15)
-Footer.Size = UDim2.new(1, 0, 0, 15)
-Footer.Font = Enum.Font.GothamBold
-Footer.Text = "made by devansh" -- YOUR NAME
-Footer.TextColor3 = Color3.fromRGB(255, 170, 0) -- Gold
-Footer.TextSize = 9
+-- 4. Footer Stats
+local FooterLine = Instance.new("Frame")
+FooterLine.Parent = MainFrame
+FooterLine.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+FooterLine.Size = UDim2.new(1, 0, 0, 1)
+FooterLine.Position = UDim2.new(0, 0, 1, -20)
+FooterLine.BorderSizePixel = 0
 
--- 🌈 Rainbow Loop
+local FooterText = Instance.new("TextLabel")
+FooterText.Parent = MainFrame
+FooterText.BackgroundTransparency = 1
+FooterText.Position = UDim2.new(0, 10, 1, -20)
+FooterText.Size = UDim2.new(1, -20, 0, 20)
+FooterText.Font = Enum.Font.Code
+FooterText.Text = "CPU: 12% | RAM: 404MB | NET: CONNECTED"
+FooterText.TextColor3 = Color3.fromRGB(100, 100, 100)
+FooterText.TextSize = 9
+FooterText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- 5. Animated Cursor
+local Cursor = Instance.new("TextLabel")
+Cursor.Parent = ConsoleArea
+Cursor.BackgroundTransparency = 1
+Cursor.Size = UDim2.new(0, 10, 0, 12)
+Cursor.Font = Enum.Font.Code
+Cursor.Text = "_"
+Cursor.TextColor3 = Color3.fromRGB(0, 255, 0)
+Cursor.TextSize = 11
+-- Cursor logic would involve complex text bounds math, simplified here by appending to log
+
+-- 🌈 RGB Border Animation
 task.spawn(function()
     local t = 0
     while MainFrame.Parent do
-        t = t + 0.01
-        local color = Color3.fromHSV(t % 1, 0.8, 1)
-        MainFrame.BorderColor3 = color
-        TitleLabel.TextColor3 = color
+        t = t + 0.005
+        local color = Color3.fromHSV(t % 1, 1, 1)
+        UIStroke.Color = color
         RunService.Heartbeat:Wait()
     end
 end)
 
--- ⏱️ Timer Loop
+-- 💻 Fake System Stats Update
 task.spawn(function()
     while MainFrame.Parent do
-        local elapsed = os.clock() - State.StartTime
-        TimerLabel.Text = string.format("%.1fs", elapsed)
-        task.wait(0.1)
+        local ram = math.random(300, 500)
+        local cpu = math.random(5, 25)
+        FooterText.Text = string.format("CPU: %d%% | RAM: %dMB | NET: ONLINE | TIME: %s", cpu, ram, os.date("%X"))
+        task.wait(2)
     end
 end)
 
 ---------------------------------------------------------------------------------------------------
--- [5] UTILITIES & LOGGING
+-- [4] LOGGING ENGINE (RICH TEXT SUPPORT)
 ---------------------------------------------------------------------------------------------------
-local function Log(text, color)
-    local timestamp = os.date("%X")
-    local prefix = "[INFO]"
-    local textColor = Color3.fromRGB(200, 200, 200)
-
-    if color == "SUCCESS" then 
-        prefix = "[✅]" 
-    elseif color == "WARN" then 
-        prefix = "[⚠️]"
-    elseif color == "FAIL" then 
-        prefix = "[❌]" 
+local function Log(text, type)
+    local prefix = "<font color='#555555'>[INFO]</font>"
+    local color = "#00FF00" -- Default Green
+    
+    if type == "SUCCESS" then 
+        prefix = "<font color='#00FF00'>[OKAY]</font>"
+        color = "#FFFFFF"
+    elseif type == "WARN" then 
+        prefix = "<font color='#FFAA00'>[WARN]</font>"
+        color = "#FFAA00"
+    elseif type == "FAIL" then 
+        prefix = "<font color='#FF0000'>[FAIL]</font>"
+        color = "#FF5555"
+    elseif type == "CMD" then
+        prefix = "<font color='#00FFFF'>[root]</font>"
+        color = "#00FFFF"
     end
     
-    local newLine = string.format("%s %s", prefix, text)
-    print("V13: " .. newLine)
+    local newLine = string.format("%s <font color='%s'>%s</font>", prefix, color, text)
+    print("V15: " .. text)
     
-    -- Append to GUI Log
+    -- Append to GUI
     LogLabel.Text = LogLabel.Text .. "\n" .. newLine
-    ConsoleScroll.CanvasPosition = Vector2.new(0, 9999) -- Auto Scroll
+    ConsoleArea.CanvasPosition = Vector2.new(0, 9999)
 end
 
+---------------------------------------------------------------------------------------------------
+-- [5] OMNISCIENT ENGINE
+---------------------------------------------------------------------------------------------------
 local function SafeCheck(func)
     local s, r = pcall(func)
     if s then return r end
     return false
 end
 
--- Time State Logic (Day/Night)
-local function GetTimeState()
-    local ct = Lighting.ClockTime
-    if ct >= 18 or ct < 5.5 then
-        return "🟢 ACTIVE", 65280, false
-    else
-        return "🔴 EXPIRED", 16711680, true
+-- 🕒 TIMEKEEPER (STRICT)
+local function GetTimeData()
+    local t = Lighting.ClockTime
+    local isActive = (t >= 18 or t < 5.5)
+    
+    local status = isActive and "ACTIVE" or "EXPIRED"
+    local color = isActive and 65280 or 16711680 -- Green / Red
+    
+    -- Discord Timestamp Calculation
+    -- We need to calculate seconds until the state changes
+    local secondsLeft = 0
+    if isActive then
+        if t >= 18 then secondsLeft = (24 - t + 5.5) * 60 -- Approx real seconds (game hour ~ 1 min)
+        else secondsLeft = (5.5 - t) * 60 end
     end
+    
+    local timestamp = os.time() + math.floor(secondsLeft)
+    local discordTime = string.format("<t:%d:R>", timestamp) -- "Ends in 4 minutes"
+    
+    return status, color, discordTime, t
 end
 
----------------------------------------------------------------------------------------------------
--- [6] OMNISCIENT SCANNERS (ALL 4 EVENTS)
----------------------------------------------------------------------------------------------------
-
--- 🔎 A. MIRAGE ISLAND SCANNER
-local function ScanMirage()
-    Log("Scanning Mirage Engine...")
+-- 🦖 PREHISTORIC SCANNER
+local function ScanPrehistoric()
+    Log("Checking Prehistoric_Module...", "CMD")
     local score = 0
     local evidence = {}
     local pos = nil
 
-    -- Layer 1: Physical Model
-    if SafeCheck(function() return Workspace.Map:FindFirstChild("MysticIsland") end) then
+    if SafeCheck(function() return Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland") end) then
         score = 100
-        table.insert(evidence, "Direct Model")
-        pos = Workspace.Map.MysticIsland.Position
-        Log(" > Found Model ✅", "SUCCESS")
+        local m = Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland")
+        pos = m.Position
+        table.insert(evidence, "Ancient Model Found")
+        Log(" > Target Acquired: Ancient Island", "SUCCESS")
     end
 
-    -- Layer 2: Triangulation
+    if Lighting.FogColor == Color3.fromRGB(40, 60, 40) then
+        score = score + 40
+        table.insert(evidence, "Primordial Atmosphere")
+    end
+
+    return {name="💎🦖 PREHISTORIC ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
+end
+
+-- 🏝️ MIRAGE SCANNER
+local function ScanMirage()
+    Log("Checking Mirage_Module...", "CMD")
+    local score = 0
+    local evidence = {}
+    local pos = nil
+
+    -- 100% Model ID Check
+    if SafeCheck(function() return Workspace.Map:FindFirstChild("MysticIsland") end) then
+        score = 100
+        table.insert(evidence, "Model ID Match")
+        pos = Workspace.Map.MysticIsland.Position
+        Log(" > Target Acquired: Mystic Island", "SUCCESS")
+    end
+    
+    -- Triangulation Fallback
     local cluster = {}
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local pp = p.Character.HumanoidRootPart.Position
-            if pp.Magnitude > 8000 and pp.Y > 200 then
-                table.insert(cluster, pp)
-            end
+            if pp.Magnitude > 8000 and pp.Y > 200 then table.insert(cluster, pp) end
         end
     end
     if #cluster >= 3 then
         local sum = Vector3.zero
         for _, v in pairs(cluster) do sum = sum + v end
-        score = score + 60 
-        table.insert(evidence, "Triangulation Cluster")
+        score = score + 60
+        table.insert(evidence, "Triangulation Vector")
         if not pos then pos = sum / #cluster end
-        Log(" > Found Player Cluster ✅", "SUCCESS")
-    end
-
-    -- Layer 3: Advanced Dealer
-    if SafeCheck(function() return Workspace:FindFirstChild("AdvancedFruitDealer", true) end) then
-        score = score + 100
-        table.insert(evidence, "Advanced Dealer NPC")
-        Log(" > Found Dealer ✅", "SUCCESS")
     end
 
     return {name="💎🏝️ MIRAGE ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- 🔎 B. KITSUNE SHRINE SCANNER
+-- 🦊 KITSUNE SCANNER
 local function ScanKitsune()
-    Log("Scanning Kitsune Engine...")
+    Log("Checking Kitsune_Module...", "CMD")
     local score = 0
     local evidence = {}
     local pos = nil
 
-    -- Layer 1: Model
-    if SafeCheck(function() return Workspace.Map:FindFirstChild("KitsuneShrine") end) then
-        score = 100; table.insert(evidence, "Shrine Model")
-        pos = Workspace.Map.KitsuneShrine.Position
-        Log(" > Found Shrine ✅", "SUCCESS")
-    end
-
-    -- Layer 2: Texture
+    -- 100% Texture ID Check
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "15306698696") end) then
-        score = score + 90; table.insert(evidence, "Blue Moon Texture")
-        Log(" > Found Texture ✅", "SUCCESS")
+        score = 100
+        table.insert(evidence, "Texture ID: 15306698696")
+        Log(" > Target Acquired: Kitsune Texture", "SUCCESS")
     end
-
-    -- Layer 3: Particles
-    if SafeCheck(function() return Workspace:FindFirstChild("AzureEmber", true) end) then
-        score = score + 50; table.insert(evidence, "Azure Embers")
+    
+    if SafeCheck(function() return Workspace.Map:FindFirstChild("KitsuneShrine") end) then
+        score = 100
+        table.insert(evidence, "Shrine Model")
+        pos = Workspace.Map.KitsuneShrine.Position
     end
 
     return {name="💎🦊 KITSUNE SHRINE", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- 🔎 C. FROZEN DIMENSION SCANNER
+-- ❄️ FROZEN SCANNER
 local function ScanFrozen()
-    Log("Scanning Frozen Engine...")
-    local score = 0
-    local pos = nil
-
+    Log("Checking Frozen_Module...", "CMD")
     if SafeCheck(function() return Workspace.Map:FindFirstChild("FrozenDimension") or Workspace.Map:FindFirstChild("Frozen Island") end) then
-        score = 100
-        if Workspace.Map:FindFirstChild("FrozenDimension") then pos = Workspace.Map.FrozenDimension.Position end
-        Log(" > Found Dimension ✅", "SUCCESS")
-        return {name="💎❄️ FROZEN DIMENSION", score=score, reason="Dimension Gate", pos=pos}
+        local p = nil
+        if Workspace.Map:FindFirstChild("FrozenDimension") then p = Workspace.Map.FrozenDimension.Position end
+        Log(" > Target Acquired: Dimension Gate", "SUCCESS")
+        return {name="💎❄️ FROZEN DIMENSION", score=100, reason="Dimension Gate", pos=p}
     end
     return {score=0}
 end
 
--- 🔎 D. FULL MOON SCANNER
+-- 🌕 MOON SCANNER
 local function ScanMoon()
-    Log("Scanning Celestial Engine...")
-    local score = 0
-    
+    Log("Checking Celestial_Module...", "CMD")
+    -- 100% Texture ID Check
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "9709149431") end) then 
-        score = 100 
-        Log(" > Found Full Moon ✅", "SUCCESS")
+        Log(" > Target Acquired: Full Moon", "SUCCESS")
+        return {name="💎🌕 FULL MOON", score=100, reason="Texture ID: 9709149431", pos=nil}
     end
-    
     if Lighting:GetAttribute("IsFullMoon") then 
-        score = score + 100 
+        return {name="💎🌕 FULL MOON", score=100, reason="Server Attribute", pos=nil}
     end
-
-    return {name="💎🌕 FULL MOON", score=score, reason="Texture Match", pos=nil}
+    return {score=0}
 end
 
 ---------------------------------------------------------------------------------------------------
--- [7] HOPPING SYSTEM
----------------------------------------------------------------------------------------------------
-local function HopServer()
-    Log("Initiating Server Hop...", "WARN")
-    local PlaceID = game.PlaceId
-    local AllIDs = {}
-    
-    local success, body = pcall(function() 
-        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) 
-    end)
-    
-    if success and body and body.data then
-        for _, v in pairs(body.data) do
-            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then
-                table.insert(AllIDs, v.id)
-            end
-        end
-    end
-    
-    if #AllIDs > 0 then
-        TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
-    else
-        Log("Hop Failed. Retrying...", "FAIL")
-        task.wait(2)
-        HopServer()
-    end
-end
-
----------------------------------------------------------------------------------------------------
--- [8] REPORTING SYSTEM (PROFESSIONAL EMBED)
+-- [6] REPORTING (STRICT ACTIVE ONLY)
 ---------------------------------------------------------------------------------------------------
 local function SendWebhook()
-    Log("Found Events ✅", "SUCCESS")
-    Log("Compiling Data...", "INFO")
-    
-    local statusText, embedColor, isExpired = GetTimeState()
-    if isExpired then embedColor = 16711680 end -- Red
+    local status, color, discordTime, clockTime = GetTimeData()
+
+    -- STRICT FILTER: ABORT IF EXPIRED
+    if status == "EXPIRED" then
+        Log("Event Found but EXPIRED. Aborting Ping.", "FAIL")
+        return -- 🛑 STOP HERE
+    end
+
+    Log("Event ACTIVE. Sending Webhook...", "SUCCESS")
 
     local fields = {}
     
     -- 1. Events
     for _, e in pairs(State.EventStack) do
-        table.insert(fields, {
-            ["name"] = e.name, -- Emojis are already in the name
-            ["value"] = "**Evidence:** " .. e.reason .. "\n**Confidence:** " .. e.score .. "%",
-            ["inline"] = false
-        })
+        table.insert(fields, {["name"] = e.name, ["value"] = "**Proof:** " .. e.reason .. "\n**Conf:** " .. e.score .. "%", ["inline"] = false})
     end
     
-    -- 2. Status
-    local clockStr = string.format("%.1f", Lighting.ClockTime)
-    table.insert(fields, {
-        ["name"] = "⏳ STATUS",
-        ["value"] = "State: " .. statusText .. "\nTime: " .. clockStr,
-        ["inline"] = false
-    })
+    -- 2. Dynamic Status
+    table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = "🟢 ACTIVE\n**Ends:** " .. discordTime .. "\n**Clock:** " .. string.format("%.1f", clockTime), ["inline"] = false})
 
-    -- 3. Join Script
+    -- 3. Scripts
     local joinScript = string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game.Players.LocalPlayer)', game.PlaceId, game.JobId)
-    table.insert(fields, {["name"] = "📜 1. JOIN SERVER", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
+    table.insert(fields, {["name"] = "📜 1. JOIN SCRIPT", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
 
-    -- 4. Professional Tween Script
     for _, e in pairs(State.EventStack) do
         if e.pos then
             local vec = math.floor(e.pos.X) .. "," .. math.floor(e.pos.Y + 250) .. "," .. math.floor(e.pos.Z)
             local ts = string.format([[
--- PROFESSIONAL ANTI-FALL TWEEN
-local TweenService = game:GetService("TweenService")
-local Plr = game.Players.LocalPlayer
-local Root = Plr.Character:WaitForChild("HumanoidRootPart")
-local Target = CFrame.new(%s)
-
--- Anti-Gravity Force
-local BV = Instance.new("BodyVelocity")
-BV.Parent = Root
-BV.Velocity = Vector3.zero
-BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-
--- Smooth Tween (350 speed)
-local Dist = (Root.Position - Target.Position).Magnitude
-local Info = TweenInfo.new(Dist / 350, Enum.EasingStyle.Linear)
-local Tween = TweenService:Create(Root, Info, {CFrame = Target})
-
-Tween:Play()
-Tween.Completed:Wait()
-BV:Destroy()
-print("Arrived at Event!")
-]], vec)
+-- [[ %s FLY TWEEN ]] --
+local P = game.Players.LocalPlayer.Character.HumanoidRootPart
+local T = CFrame.new(%s)
+local B = Instance.new("BodyVelocity", P); B.Velocity=Vector3.zero; B.MaxForce=Vector3.one*9e9
+local Tw = game:GetService("TweenService"):Create(P, TweenInfo.new((P.Position-T.Position).Magnitude/350), {CFrame=T})
+Tw:Play(); Tw.Completed:Wait(); B:Destroy()
+]], e.name, vec)
             table.insert(fields, {["name"] = "✈️ 2. TP TO " .. e.name, ["value"] = "```lua\n" .. ts .. "\n```", ["inline"] = false})
         end
     end
@@ -412,9 +395,9 @@ print("Arrived at Event!")
         ["content"] = CONFIG.PingRole,
         ["embeds"] = {{
             ["title"] = "🌟 Event Detected",
-            ["color"] = embedColor,
+            ["color"] = color,
             ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | V13 Precision"},
+            ["footer"] = {["text"] = "Devansh | Termux V15"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -423,27 +406,39 @@ print("Arrived at Event!")
     if req then
         pcall(function() req({Url = CONFIG.WebhookURL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(payload)}) end)
     end
-    
-    Log("Webhook Sent! 📨", "SUCCESS")
+    Log("Payload Delivered.", "SUCCESS")
+end
+
+local function Hop()
+    Log("Hopping...", "WARN")
+    local PlaceID = game.PlaceId
+    local AllIDs = {}
+    local s, body = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) end)
+    if s and body and body.data then
+        for _, v in pairs(body.data) do
+            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then table.insert(AllIDs, v.id) end
+        end
+    end
+    if #AllIDs > 0 then TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
+    else task.wait(1); Hop() end
 end
 
 ---------------------------------------------------------------------------------------------------
--- [9] INIT (MAIN ORCHESTRATOR)
+-- [7] MAIN THREAD
 ---------------------------------------------------------------------------------------------------
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
-    Log("System Initialized", "INFO")
-    
+    Log("Booting System...", "CMD")
+    task.wait(0.5)
+
     -- Friend Check
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p:IsFriendsWith(LocalPlayer.UserId) then
-            Log("Friend Detected! Leaving...", "WARN")
-            HopServer()
-            return
+            Log("Security Alert: Friend Detected.", "FAIL")
+            Hop(); return
         end
     end
 
-    -- Run Scanners
     local results = {}
     table.insert(results, ScanMirage())
     task.wait(CONFIG.ScanDelay)
@@ -452,48 +447,37 @@ local function init()
     table.insert(results, ScanMoon())
     task.wait(CONFIG.ScanDelay)
     table.insert(results, ScanFrozen())
-    
-    -- Analyze Results
-    local highestScore = 0
-    State.EventStack = {} -- Clear previous
+    task.wait(CONFIG.ScanDelay)
+    table.insert(results, ScanPrehistoric())
+
+    local highest = 0
+    State.EventStack = {} 
 
     for _, res in pairs(results) do
-        if res.score and res.score > highestScore then highestScore = res.score end
-        -- Collect anything that passes the "Hold" threshold for the report
-        if res.score and res.score >= CONFIG.HoldConfidence then
-            table.insert(State.EventStack, res)
-        end
+        if res.score > highest then highest = res.score end
+        if res.score >= CONFIG.HoldConfidence then table.insert(State.EventStack, res) end
     end
 
-    -- [[ DECISION MATRIX: 90/75 LOGIC ]] --
-    
-    if highestScore >= CONFIG.MinConfidence then
-        -- 🟢 Score 90-100: CONFIRMED
-        Log("High Confidence ("..highestScore.."%). Reporting.", "SUCCESS")
+    -- LOGIC GATE
+    if highest >= CONFIG.MinConfidence then
+        -- 90%+ Confidence
         SendWebhook()
         task.wait(2)
-        HopServer()
-
-    elseif highestScore >= CONFIG.HoldConfidence then
-        -- 🟡 Score 75-89: MAYBE / HOLD
+        Hop()
+    elseif highest >= CONFIG.HoldConfidence then
+        -- 75-89% Confidence (Hold)
         if not State.IsHolding then
-            Log("⚠️ Maybe Event ("..highestScore.."%). Holding for "..CONFIG.HoldTime.."s...", "WARN")
+            Log("Confidence: "..highest.."% (Hold Mode)", "WARN")
             State.IsHolding = true
-            task.wait(CONFIG.HoldTime) -- Wait 5 seconds
-            init() -- RECURSIVE RE-SCAN
-            return
+            task.wait(CONFIG.HoldTime)
+            init() -- Re-scan
         else
-            -- Already held once, if still not 90, assume it's a ghost/fake and Hop
-            Log("Hold Expired. Confidence failed to reach 90.", "FAIL")
-            HopServer()
+            Hop() -- Failed check twice
         end
-
     else
-        -- 🔴 Score < 75: HOP
-        Log("No events found. Hopping...", "INFO")
-        HopServer()
+        Log("No Targets Found.", "CMD")
+        Hop()
     end
 end
 
--- START
 init()
