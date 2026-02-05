@@ -1,8 +1,7 @@
 --[[
-    DEVANSH EVENT TRACKER | GOLDY OP EDITION [v6.1]
-    > CONFIG: Custom Webhook & Avatar Updated
-    > ENGINE: V19 Architecture + Prehistoric
-    > VISUALS: Hyper-Gold Professional GUI
+    DEVANSH EVENT TRACKER | INFINITE HOP EDITION [v7.1]
+    > GUI: Event Tracker Header / No Scroll / Rainbow Border
+    > LOGIC: Scan -> Webhook -> Hop (NEVER STOPS)
 ]]
 
 --------------------------------------------------------------------------------
@@ -34,127 +33,173 @@ local Services = {
     Lighting = game:GetService("Lighting"),
     Workspace = game:GetService("Workspace"),
     Tween = game:GetService("TweenService"),
-    Run = game:GetService("RunService"),
-    UserInput = game:GetService("UserInputService")
+    RunService = game:GetService("RunService")
 }
 
 local LocalPlayer = Services.Players.LocalPlayer
 local HttpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 --------------------------------------------------------------------------------
--- // [3] PROFESSIONAL GOLD GUI (DRAGGABLE) //
+-- // [3] GUI SYSTEM //
 --------------------------------------------------------------------------------
-local ConsoleArea, StatusLabel
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DevanshV17_Fixed"
+ScreenGui.ResetOnSpawn = false
+if gethui then ScreenGui.Parent = gethui() else ScreenGui.Parent = Services.CoreGui end
 
-local function CreateGoldGUI()
-    if Services.CoreGui:FindFirstChild("DevanshGoldy") then Services.CoreGui.DevanshGoldy:Destroy() end
+-- Main Terminal Window
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "Terminal"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
+MainFrame.Position = UDim2.new(0.5, -180, 0.5, -120)
+MainFrame.Size = UDim2.new(0, 360, 0, 240)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-    local Screen = Instance.new("ScreenGui")
-    Screen.Name = "DevanshGoldy"
-    Screen.Parent = Services.CoreGui
-    Screen.ResetOnSpawn = false
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
 
-    -- Main Container
-    local Main = Instance.new("Frame")
-    Main.Name = "MainFrame"
-    Main.Size = UDim2.new(0, 320, 0, 200)
-    Main.Position = UDim2.new(0.5, -160, 0.2, 0)
-    Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    Main.BorderSizePixel = 0
-    Main.Active = true
-    Main.Parent = Screen
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0, 255, 100)
 
-    -- Drag Logic
-    local dragging, dragInput, dragStart, startPos
-    Main.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = Main.Position
-            input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    Main.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-    end)
-    Services.UserInput.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
+-- Header
+local TopBar = Instance.new("Frame")
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.BorderSizePixel = 0
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
 
-    -- Gold Glow Border (Animated)
-    local Stroke = Instance.new("UIStroke"); Stroke.Parent = Main; Stroke.Thickness = 3
-    local Gradient = Instance.new("UIGradient"); Gradient.Parent = Stroke
-    Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)),   -- Gold
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 165, 0)), -- Orange Gold
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 215, 0))    -- Gold
-    })
-    
-    task.spawn(function()
-        while Screen.Parent do Gradient.Rotation = Gradient.Rotation + 2; task.wait(0.02) end
-    end)
+local FixBar = Instance.new("Frame")
+FixBar.Parent = TopBar
+FixBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+FixBar.Size = UDim2.new(1, 0, 0, 10)
+FixBar.Position = UDim2.new(0, 0, 1, -10)
+FixBar.BorderSizePixel = 0
 
-    -- Rounded Corners
-    local UC = Instance.new("UICorner"); UC.CornerRadius = UDim.new(0, 10); UC.Parent = Main
+-- Title (Updated)
+local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "EVENT TRACKER" -- <--- UPDATED HEADER
+Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+Title.TextSize = 12
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Header
-    local Header = Instance.new("Frame"); Header.Parent = Main; Header.BackgroundColor3 = Color3.fromRGB(20, 20, 20); Header.Size = UDim2.new(1, 0, 0, 30)
-    local HC = Instance.new("UICorner"); HC.CornerRadius = UDim.new(0, 10); HC.Parent = Header
-    local Fix = Instance.new("Frame"); Fix.Parent = Header; Fix.BackgroundColor3 = Color3.fromRGB(20,20,20); Fix.Size = UDim2.new(1,0,0,10); Fix.Position = UDim2.new(0,0,1,-10); Fix.BorderSizePixel=0
+-- Status
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Parent = TopBar
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
+StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
+StatusLabel.Font = Enum.Font.Code
+StatusLabel.Text = "[LOADING]"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+StatusLabel.TextSize = 11
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 
-    local Title = Instance.new("TextLabel"); Title.Parent = Header; Title.BackgroundTransparency = 1; Title.Position = UDim2.new(0,10,0,0); Title.Size = UDim2.new(1,-20,1,0)
-    Title.Text = getgenv().DevanshConfig.BotName:upper(); Title.Font = Enum.Font.GothamBold; Title.TextColor3 = Color3.fromRGB(255, 215, 0); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left
+-- Console (No Scroll)
+local ConsoleArea = Instance.new("ScrollingFrame")
+ConsoleArea.Parent = MainFrame
+ConsoleArea.BackgroundTransparency = 1
+ConsoleArea.Position = UDim2.new(0, 10, 0, 40)
+ConsoleArea.Size = UDim2.new(1, -20, 1, -60)
+ConsoleArea.ScrollBarThickness = 0 -- <--- HIDDEN SCROLLBAR
+ConsoleArea.ScrollingEnabled = false -- <--- DISABLED SCROLLING
+ConsoleArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-    StatusLabel = Instance.new("TextLabel"); StatusLabel.Parent = Header; StatusLabel.BackgroundTransparency = 1; StatusLabel.Size = UDim2.new(1,-10,1,0); StatusLabel.Position = UDim2.new(0,0,0,0)
-    StatusLabel.Text = "[LOADING]"; StatusLabel.Font = Enum.Font.Code; StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 255); StatusLabel.TextSize = 11; StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
+-- Footer
+local Footer = Instance.new("TextLabel")
+Footer.Parent = MainFrame
+Footer.BackgroundTransparency = 1
+Footer.Position = UDim2.new(0, 0, 1, -20)
+Footer.Size = UDim2.new(1, 0, 0, 20)
+Footer.Font = Enum.Font.Code
+Footer.Text = "made by devansh"
+Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
+Footer.TextSize = 10
 
-    -- Console
-    local CBG = Instance.new("Frame"); CBG.Parent = Main; CBG.BackgroundColor3 = Color3.fromRGB(5,5,5); CBG.Position = UDim2.new(0,10,0,40); CBG.Size = UDim2.new(1,-20,1,-50)
-    local CC = Instance.new("UICorner"); CC.CornerRadius = UDim.new(0, 8); CC.Parent = CBG
-    
-    ConsoleArea = Instance.new("ScrollingFrame"); ConsoleArea.Parent = CBG; ConsoleArea.Size = UDim2.new(1,-10,1,-10); ConsoleArea.Position = UDim2.new(0,5,0,5); ConsoleArea.BackgroundTransparency = 1; ConsoleArea.ScrollBarThickness = 2
-    local UIList = Instance.new("UIListLayout"); UIList.Parent = ConsoleArea; UIList.SortOrder = Enum.SortOrder.LayoutOrder
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ConsoleArea
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 2)
 
-    return ConsoleArea
+-- Rainbow Animation
+task.spawn(function()
+    local t = 0
+    while MainFrame.Parent do
+        t = t + 0.005
+        local color = Color3.fromHSV(t % 1, 0.9, 1)
+        UIStroke.Color = color
+        Services.RunService.Heartbeat:Wait()
+    end
+end)
+
+-- Logging System (Auto-Fit)
+local LogCount = 0
+local function UpdateStatus(text, color)
+    StatusLabel.Text = text
+    if color then StatusLabel.TextColor3 = color end
 end
 
-CreateGoldGUI()
-
--- GUI Logging System
-local LogIndex = 0
 local function Log(text, type)
-    if not ConsoleArea then return end
-    LogIndex = LogIndex + 1
-    
-    local color = Color3.fromRGB(255, 255, 255)
+    LogCount = LogCount + 1
+    local color = Color3.fromRGB(200, 200, 200)
     local prefix = "[*]"
     
     if type == "SUCCESS" then color = Color3.fromRGB(0, 255, 100); prefix = "[+]"
-    elseif type == "WARN" then color = Color3.fromRGB(255, 200, 0); prefix = "[!]"
+    elseif type == "WARN" then color = Color3.fromRGB(255, 180, 0); prefix = "[!]"
     elseif type == "FAIL" then color = Color3.fromRGB(255, 50, 50); prefix = "[-]"
     elseif type == "CMD" then color = Color3.fromRGB(0, 200, 255); prefix = "[$]" end
-
-    local L = Instance.new("TextLabel"); L.Parent = ConsoleArea; L.BackgroundTransparency = 1; L.Size = UDim2.new(1,0,0,15); L.Font = Enum.Font.Code; L.TextSize = 11; L.TextColor3 = color; L.TextXAlignment = Enum.TextXAlignment.Left
-    L.Text = prefix .. " " .. text; L.LayoutOrder = LogIndex
-
-    if #ConsoleArea:GetChildren() > 15 then ConsoleArea:GetChildren()[1]:Destroy() end
+    
+    local Line = Instance.new("TextLabel")
+    Line.Parent = ConsoleArea
+    Line.BackgroundTransparency = 1
+    Line.Size = UDim2.new(1, 0, 0, 14)
+    Line.Font = Enum.Font.Code
+    Line.Text = string.format("%s %s", prefix, text)
+    Line.TextColor3 = color
+    Line.TextSize = 11
+    Line.TextXAlignment = Enum.TextXAlignment.Left
+    Line.LayoutOrder = LogCount
+    
+    -- Auto-Fit: Only keep last 12 lines (Prevents need to scroll)
+    local maxLines = 12
+    local children = ConsoleArea:GetChildren()
+    local textLabels = {}
+    for _, c in pairs(children) do if c:IsA("TextLabel") then table.insert(textLabels, c) end end
+    
+    if #textLabels > maxLines then
+        table.sort(textLabels, function(a,b) return a.LayoutOrder < b.LayoutOrder end)
+        for i = 1, (#textLabels - maxLines) do
+            textLabels[i]:Destroy()
+        end
+    end
+    
     ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
 end
 
-local function UpdateStatus(text) if StatusLabel then StatusLabel.Text = text end end
-
 --------------------------------------------------------------------------------
--- // [4] SCANNING ENGINES (EXACT COPY V19 + EXTRA ENGINE) //
+-- // [4] SCANNING ENGINES //
 --------------------------------------------------------------------------------
-
 local function SafeCheck(func)
     local s, r = pcall(func)
     if s then return r end
     return false
 end
 
--- [ENGINE 1] PREHISTORIC ISLAND (The "Extra" Engine)
+-- [ENGINE 1] PREHISTORIC ISLAND
 local function ScanPrehistoric()
     Log("Scanning Prehistoric...", "CMD")
     local score = 0
@@ -177,7 +222,7 @@ local function ScanPrehistoric()
     return {name="PREHISTORIC ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- [ENGINE 2] MIRAGE ISLAND (Cut-to-Cut V19)
+-- [ENGINE 2] MIRAGE ISLAND
 local function ScanMirage()
     Log("Scanning Mirage...", "CMD")
     local score = 0
@@ -210,7 +255,7 @@ local function ScanMirage()
     return {name="MIRAGE ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- [ENGINE 3] KITSUNE SHRINE (Cut-to-Cut V19)
+-- [ENGINE 3] KITSUNE SHRINE
 local function ScanKitsune()
     Log("Scanning Kitsune...", "CMD")
     local score = 0
@@ -232,7 +277,7 @@ local function ScanKitsune()
     return {name="KITSUNE SHRINE", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- [ENGINE 4] FROZEN DIMENSION (Cut-to-Cut V19)
+-- [ENGINE 4] FROZEN DIMENSION
 local function ScanFrozen()
     Log("Scanning Frozen...", "CMD")
     if SafeCheck(function() return Services.Workspace.Map:FindFirstChild("FrozenDimension") or Services.Workspace.Map:FindFirstChild("Frozen Island") end) then
@@ -244,7 +289,7 @@ local function ScanFrozen()
     return {score=0}
 end
 
--- [ENGINE 5] FULL MOON (Cut-to-Cut V19)
+-- [ENGINE 5] FULL MOON
 local function ScanMoon()
     Log("Scanning Celestial...", "CMD")
     if SafeCheck(function() return string.find(Services.Lighting.Sky.MoonTextureId, "9709149431") end) then 
@@ -255,11 +300,10 @@ local function ScanMoon()
 end
 
 --------------------------------------------------------------------------------
--- // [5] PROFESSIONAL GOLD EMBED SYSTEM //
+-- // [5] WEBHOOK & HOPPING //
 --------------------------------------------------------------------------------
-
 local function SendGoldWebhook(events)
-    UpdateStatus("[REPORTING]")
+    UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
     local fields = {}
     local desc = ""
     
@@ -280,7 +324,7 @@ local function SendGoldWebhook(events)
         color = 16766720, -- HYPER GOLD COLOR
         fields = fields,
         thumbnail = {url = getgenv().DevanshConfig.BotAvatar},
-        footer = {text = "Devansh Tracker | Goldy OP Edition | v6.1"}
+        footer = {text = "Devansh Tracker | Infinite Hop Mode | v7.1"}
     }
 
     local payload = Services.Http:JSONEncode({
@@ -299,12 +343,8 @@ local function SendGoldWebhook(events)
     Log("Gold Webhook Sent!", "SUCCESS")
 end
 
---------------------------------------------------------------------------------
--- // [6] SERVER HOPPING (EXACT COPY V19) //
---------------------------------------------------------------------------------
-
 local function Hop()
-    UpdateStatus("[HOPPING]")
+    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
     Log("Initiating Hop Protocol...", "WARN")
     local PlaceID = game.PlaceId
     local AllIDs = {}
@@ -319,13 +359,13 @@ local function Hop()
 end
 
 --------------------------------------------------------------------------------
--- // [7] MAIN LOGIC LOOP //
+-- // [6] MAIN LOGIC //
 --------------------------------------------------------------------------------
 task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
     task.wait(1)
     
-    UpdateStatus("[SCANNING]")
+    UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
     local Config = getgenv().DevanshConfig
     local FoundEvents = {}
 
@@ -341,10 +381,16 @@ task.spawn(function()
     end
 
     if #FoundEvents > 0 then
-        UpdateStatus("[FOUND!]")
+        UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
         Log("!!! EVENT DETECTED !!!", "SUCCESS")
+        
+        -- 1. SEND WEBHOOK
         SendGoldWebhook(FoundEvents)
-        -- STOP: Do not hop if found.
+        
+        -- 2. FORCE HOP
+        Log("Continuing to Hop...", "WARN")
+        task.wait(2)
+        Hop()
     else
         Log("No events. Hopping...", "FAIL")
         task.wait(2)
