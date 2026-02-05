@@ -1,15 +1,15 @@
--- [[ 🚀 GOD MODE V20: ITERATIVE LOOP FIX 🚀 ]] --
+-- [[ 🚀 GOD MODE V21: LOOP-ONLY ENGINE 🚀 ]] --
 -- [[ REWRITTEN BY DEVANSH | STATUS: STABLE MOBILE ]] --
--- [[ FIX: Removed all recursion. Uses 'while true do' loops. ]] --
+-- [[ FIX: Removed recursion to prevent Stack Overflow. Uses 'while true do' loops. ]] --
 
-print(">> STARTING V20 LOOP ENGINE... <<")
+print(">> STARTING V21 LOOP ENGINE... <<")
 
 ---------------------------------------------------------------------------------------------------
 -- [1] CONFIGURATION
 ---------------------------------------------------------------------------------------------------
 local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
-    BotName = "Termux Tracker V20",
+    BotName = "Termux Tracker V21",
     BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png",
     PingRole = "@everyone",
     MinConfidence = 90, 
@@ -44,7 +44,7 @@ local function CreateGUI()
     if not s or not p then p = LocalPlayer:WaitForChild("PlayerGui") end
 
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "DevanshV20_Loop"
+    ScreenGui.Name = "DevanshV21_Loop"
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = p
 
@@ -74,17 +74,14 @@ local function CreateGUI()
     TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
     TopBar.Size = UDim2.new(1, 0, 0, 25)
     TopBar.BorderSizePixel = 0
-    local TopCorner = Instance.new("UICorner")
-    TopCorner.CornerRadius = UDim.new(0, 12)
-    TopCorner.Parent = TopBar
-
+    
     local Title = Instance.new("TextLabel")
     Title.Parent = TopBar
     Title.BackgroundTransparency = 1
     Title.Position = UDim2.new(0, 10, 0, 0)
     Title.Size = UDim2.new(0.6, 0, 1, 0)
     Title.Font = Enum.Font.GothamBold
-    Title.Text = "root@devansh:~/v20"
+    Title.Text = "root@devansh:~/v21"
     Title.TextColor3 = Color3.fromRGB(200, 200, 200)
     Title.TextSize = 12
     Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -256,13 +253,13 @@ local function RunScans()
 end
 
 ---------------------------------------------------------------------------------------------------
--- [6] REPORTING (DUAL SCRIPT EMBED)
+-- [6] REPORTING
 ---------------------------------------------------------------------------------------------------
 local function SendWebhook(events)
     local status, color, discordTime, clockTime = GetTimeData()
 
     if status == "EXPIRED" then
-        Log("Event Expired. Skipping.", "FAIL")
+        Log("Event Expired. Skipping Webhook.", "FAIL")
         return 
     end
 
@@ -303,7 +300,7 @@ Tw:Play(); Tw.Completed:Wait(); B:Destroy()
             ["title"] = "🌟 EVENT DETECTED",
             ["color"] = color,
             ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | Termux V20 Stable"},
+            ["footer"] = {["text"] = "Devansh | Termux V21 Stable"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
