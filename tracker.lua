@@ -1,322 +1,303 @@
--- [[ 🚀 GOD MODE V26: ULTIMATE MOBILE STABLE 🚀 ]] --
--- [[ REWRITTEN BY DEVANSH | STATUS: PERFECTED ]] --
--- [[ FEATURES: RAINBOW GUI + PRO EMBED + ZERO CRASH LOOP ]] --
+--[[
+    DEVANSH EVENT TRACKER | DELTA ELITE EDITION [v3.2.0]
+    > SYSTEM: Auto-Exec Compatible / Ascending Sort / Discord RPC
+    > AESTHETIC: Hyper-Gold / Everyone Ping
+]]
 
--- 1. SAFE LOAD
-if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(2) -- Let executor settle
-print(">> V26 INJECTED: RESTORING GUI... <<")
+--------------------------------------------------------------------------------
+-- // [1] USER CONFIGURATION MATRIX //
+--------------------------------------------------------------------------------
+getgenv().DevanshConfig = {
+    -- [[ DISCORD INTEGRATION ]]
+    Discord = {
+        WebhookURL  = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",  -- <--- PASTE WEBHOOK HERE
+        
+        -- Bot Identity
+        BotName     = "Devansh Gold Sentinel",  
+        BotAvatar   = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png?ex=6985a369&is=698451e9&hm=af1360b72e9d331403c17f46f80135f7b160fa37890c1b6c31d3535f3fe1f6ea&",
+        
+        -- Alerts
+        PingRole    = "@everyone",              -- Pings everyone on detection
+        EmbedColor  = 16766720,                 -- HYPER GOLD (#FFD700)
+        FooterText  = "Made by| Devansh"
+    },
 
--- 2. VARIABLES & SERVICES
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
-local Lighting = game:GetService("Lighting")
-local Workspace = game:GetService("Workspace")
-local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer
-
-local CONFIG = {
-    WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
-    BotName = "Termux Tracker V26",
-    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png",
-    PingRole = "@everyone"
+    -- [[ SERVER HOPPING ]]
+    Hopping = {
+        Enabled      = true,    -- Master Switch
+        HopDelay     = 6.0,     -- Seconds to wait before hopping (Safe for Mobile)
+        MinPlayers   = 1,       -- Minimum players
+        MaxPlayers   = 12       -- Max players (Avoids full servers)
+    }
 }
 
--- 3. GUI SYSTEM (Rainbow + Console Restored)
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshV26_Ultimate"
-ScreenGui.ResetOnSpawn = false
--- Mobile Safe Parent
-pcall(function() ScreenGui.Parent = LocalPlayer.PlayerGui end)
+--------------------------------------------------------------------------------
+-- // DO NOT EDIT BELOW THIS LINE - CORE ENGINE //
+--------------------------------------------------------------------------------
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "Terminal"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
-MainFrame.Size = UDim2.new(0, 320, 0, 220)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
+local Config = getgenv().DevanshConfig
+local Services = {
+    Players = game:GetService("Players"),
+    Http = game:GetService("HttpService"),
+    Teleport = game:GetService("TeleportService"),
+    CoreGui = game:GetService("CoreGui"),
+    Run = game:GetService("RunService"),
+    Lighting = game:GetService("Lighting"),
+    Workspace = game:GetService("Workspace"),
+    Tween = game:GetService("TweenService")
+}
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
+local LocalPlayer = Services.Players.LocalPlayer
+local HttpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Parent = MainFrame
-UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(0, 255, 100)
+local SessionData = {
+    StartTime = os.time(),
+    Events = {},
+    TargetFound = false
+}
 
--- Header
-local TopBar = Instance.new("Frame")
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-TopBar.Size = UDim2.new(1, 0, 0, 25)
-TopBar.BorderSizePixel = 0
-local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 12)
-TopCorner.Parent = TopBar
-
-local Title = Instance.new("TextLabel")
-Title.Parent = TopBar
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Size = UDim2.new(0.6, 0, 1, 0)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "root@devansh:~/v26"
-Title.TextColor3 = Color3.fromRGB(200, 200, 200)
-Title.TextSize = 12
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = TopBar
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
-StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
-StatusLabel.Font = Enum.Font.Code
-StatusLabel.Text = "[BOOTING]"
-StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-StatusLabel.TextSize = 11
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
-
--- Console
-local ConsoleArea = Instance.new("ScrollingFrame")
-ConsoleArea.Parent = MainFrame
-ConsoleArea.BackgroundTransparency = 1
-ConsoleArea.Position = UDim2.new(0, 10, 0, 35)
-ConsoleArea.Size = UDim2.new(1, -20, 1, -55)
-ConsoleArea.ScrollBarThickness = 3
-ConsoleArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 100)
-ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = ConsoleArea
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 2)
-
--- Footer
-local Footer = Instance.new("TextLabel")
-Footer.Parent = MainFrame
-Footer.BackgroundTransparency = 1
-Footer.Position = UDim2.new(0, 0, 1, -20)
-Footer.Size = UDim2.new(1, 0, 0, 20)
-Footer.Font = Enum.Font.Code
-Footer.Text = "made by devansh"
-Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
-Footer.TextSize = 10
-
--- RAINBOW ANIMATION (Safe Loop)
-task.spawn(function()
-    while MainFrame.Parent do
-        local t = tick() % 5 / 5
-        UIStroke.Color = Color3.fromHSV(t, 1, 1)
-        task.wait(0.05)
+--------------------------------------------------------------------------------
+-- // [2] UI ENGINE: CYBER-GOLD CONSOLE //
+--------------------------------------------------------------------------------
+local function CreateUI()
+    -- Safety Check: Remove old GUI if exists
+    if Services.CoreGui:FindFirstChild("DevanshGoldInterface") then
+        Services.CoreGui.DevanshGoldInterface:Destroy()
     end
-end)
 
--- 4. UTILS & LOGGING
-local LogCount = 0
+    local GUI = Instance.new("ScreenGui")
+    GUI.Name = "DevanshGoldInterface"
+    GUI.Parent = Services.CoreGui
+    GUI.ResetOnSpawn = false
 
-local function UpdateStatus(text, color)
-    StatusLabel.Text = text
-    StatusLabel.TextColor3 = color
-end
+    -- Main Window
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0, 500, 0, 350) -- Slightly smaller for Mobile screens
+    Frame.Position = UDim2.new(0.5, -250, 0.5, -175)
+    Frame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    Frame.BorderSizePixel = 0
+    Frame.Parent = GUI
 
-local function Log(text, type)
-    LogCount = LogCount + 1
-    local color = Color3.fromRGB(200, 200, 200)
-    local prefix = "[*]"
+    -- GOLD Pulse Border
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Thickness = 3
+    Stroke.Parent = Frame
+    local Gradient = Instance.new("UIGradient")
+    Gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)), 
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 140, 0)), 
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 215, 0))
+    })
+    Gradient.Parent = Stroke
     
-    if type == "SUCCESS" then color = Color3.fromRGB(0, 255, 100); prefix = "[+]"
-    elseif type == "WARN" then color = Color3.fromRGB(255, 180, 0); prefix = "[!]"
-    elseif type == "FAIL" then color = Color3.fromRGB(255, 50, 50); prefix = "[-]"
-    elseif type == "CMD" then color = Color3.fromRGB(0, 200, 255); prefix = "[$]" end
-    
-    local Line = Instance.new("TextLabel")
-    Line.Parent = ConsoleArea
-    Line.BackgroundTransparency = 1
-    Line.Size = UDim2.new(1, 0, 0, 14)
-    Line.Font = Enum.Font.Code
-    Line.Text = string.format("%s %s", prefix, text)
-    Line.TextColor3 = color
-    Line.TextSize = 11
-    Line.TextXAlignment = Enum.TextXAlignment.Left
-    Line.LayoutOrder = LogCount
-    
-    if LogCount > 40 then
-        for _, child in pairs(ConsoleArea:GetChildren()) do
-            if child:IsA("TextLabel") and child.LayoutOrder < (LogCount - 40) then child:Destroy() end
+    task.spawn(function()
+        while GUI.Parent do
+            Gradient.Rotation = Gradient.Rotation + 2
+            task.wait(0.02)
         end
-    end
-    ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
-end
-
-local function GetTimeData()
-    local t = Lighting.ClockTime
-    local isActive = (t >= 18 or t < 5.5)
-    local status = isActive and "ACTIVE" or "EXPIRED"
-    local color = isActive and 65280 or 16711680
-    
-    local secondsLeft = 0
-    if isActive then
-        if t >= 18 then secondsLeft = (24 - t + 5.5) * 60 
-        else secondsLeft = (5.5 - t) * 60 end
-    end
-    local timestamp = os.time() + math.floor(secondsLeft)
-    return status, color, string.format("<t:%d:R>", timestamp), t
-end
-
--- 5. SCANNERS (Prehistoric & All)
-local function RunScans()
-    local events = {}
-    
-    -- PREHISTORIC
-    if Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland") then
-        local m = Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland")
-        table.insert(events, {name="💎🦖 PREHISTORIC ISLAND", score=100, reason="Model Found", pos=m.Position})
-        Log("Found: Prehistoric Island", "SUCCESS")
-    end
-
-    -- MIRAGE
-    if Workspace.Map:FindFirstChild("MysticIsland") then
-        table.insert(events, {name="💎🏝️ MIRAGE ISLAND", score=100, reason="Model ID", pos=Workspace.Map.MysticIsland.Position})
-        Log("Found: Mirage Island", "SUCCESS")
-    end
-
-    -- KITSUNE
-    if string.find(Lighting.Sky.MoonTextureId, "15306698696") then
-        table.insert(events, {name="💎🦊 KITSUNE SHRINE", score=100, reason="Texture ID", pos=nil})
-        Log("Found: Kitsune Texture", "SUCCESS")
-    end
-
-    -- FROZEN
-    if Workspace.Map:FindFirstChild("FrozenDimension") then
-        table.insert(events, {name="💎❄️ FROZEN DIMENSION", score=100, reason="Dimension Gate", pos=Workspace.Map.FrozenDimension.Position})
-        Log("Found: Frozen Dimension", "SUCCESS")
-    end
-
-    -- MOON
-    if string.find(Lighting.Sky.MoonTextureId, "9709149431") then
-        table.insert(events, {name="💎🌕 FULL MOON", score=100, reason="Texture ID", pos=nil})
-        Log("Found: Full Moon", "SUCCESS")
-    end
-
-    return events
-end
-
--- 6. WEBHOOK (Pro Dual Scripts)
-local function SendWebhook(events)
-    UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
-    local status, color, discordTime, clockTime = GetTimeData()
-
-    if status == "EXPIRED" then
-        Log("Event EXPIRED. Aborting.", "FAIL")
-        return 
-    end
-
-    local fields = {}
-    for _, e in pairs(events) do
-        table.insert(fields, {["name"] = e.name, ["value"] = "**Engine:** " .. e.reason .. "\n**Conf:** " .. e.score .. "%", ["inline"] = false})
-    end
-    table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = "🟢 ACTIVE\n**Ends:** " .. discordTime .. "\n**Clock:** " .. string.format("%.1f", clockTime), ["inline"] = false})
-
-    local directLink = "https://www.roblox.com/games/"..game.PlaceId.."?jobId="..game.JobId
-    table.insert(fields, {["name"] = "🌍 SERVER INFO", ["value"] = "**Job ID:** `" .. game.JobId .. "`\n**[Click to Direct Join](" .. directLink .. ")**", ["inline"] = false})
-
-    local joinScript = string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game.Players.LocalPlayer)', game.PlaceId, game.JobId)
-    table.insert(fields, {["name"] = "📜 1. JOIN SCRIPT", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
-
-    for _, e in pairs(events) do
-        if e.pos then
-            local islandName = string.gsub(e.name, "💎", "")
-            local vec = math.floor(e.pos.X) .. "," .. math.floor(e.pos.Y + 200) .. "," .. math.floor(e.pos.Z)
-            local tpScript = string.format([[
--- [[ TELEPORT TO %s ]] --
-local P = game.Players.LocalPlayer.Character.HumanoidRootPart
-local T = CFrame.new(%s)
-local B = Instance.new("BodyVelocity", P); B.Velocity=Vector3.zero; B.MaxForce=Vector3.one*9e9
-local Tw = game:GetService("TweenService"):Create(P, TweenInfo.new((P.Position-T.Position).Magnitude/350), {CFrame=T})
-Tw:Play(); Tw.Completed:Wait(); B:Destroy()
-]], islandName, vec)
-            table.insert(fields, {["name"] = "✈️ 2. TP TO " .. islandName, ["value"] = "```lua\n" .. tpScript .. "\n```", ["inline"] = false})
-        end
-    end
-
-    local payload = {
-        ["username"] = CONFIG.BotName,
-        ["avatar_url"] = CONFIG.BotAvatar,
-        ["content"] = CONFIG.PingRole,
-        ["embeds"] = {{
-            ["title"] = "🌟 EVENT DETECTED",
-            ["color"] = color,
-            ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | Termux V26 Ultimate"},
-            ["timestamp"] = DateTime.now():ToIsoDate()
-        }}
-    }
-    
-    pcall(function()
-        local req = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
-        if req then req({Url = CONFIG.WebhookURL, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = HttpService:JSONEncode(payload)}) end
     end)
-    Log("Payload Delivered.", "SUCCESS")
+
+    -- Header
+    local Header = Instance.new("Frame")
+    Header.Size = UDim2.new(1, 0, 0, 40)
+    Header.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    Header.Parent = Frame
+    
+    local Title = Instance.new("TextLabel")
+    Title.Text = Config.Discord.BotName:upper()
+    Title.Font = Enum.Font.Code
+    Title.TextColor3 = Color3.fromRGB(255, 215, 0)
+    Title.TextSize = 14
+    Title.Size = UDim2.new(1, -20, 1, 0)
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Parent = Header
+
+    -- Console Log
+    local Console = Instance.new("ScrollingFrame")
+    Console.Size = UDim2.new(1, -20, 1, -80)
+    Console.Position = UDim2.new(0, 10, 0, 50)
+    Console.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
+    Console.ScrollBarThickness = 2
+    Console.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    Console.Parent = Frame
+    
+    local ListLayout = Instance.new("UIListLayout")
+    ListLayout.Padding = UDim.new(0, 4)
+    ListLayout.Parent = Console
+
+    return Console
 end
 
-local function Hop()
-    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
-    Log("Hopping...", "WARN")
-    local PlaceID = game.PlaceId
-    local AllIDs = {}
-    local s, body = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) end)
+local ConsoleOutput = CreateUI()
+
+local function Log(msg)
+    local Line = Instance.new("TextLabel")
+    Line.Text = string.format("[%s] %s", os.date("%H:%M:%S"), msg)
+    Line.TextColor3 = Color3.fromRGB(255, 230, 100)
+    Line.Font = Enum.Font.Code
+    Line.TextSize = 12
+    Line.Size = UDim2.new(1, 0, 0, 16)
+    Line.BackgroundTransparency = 1
+    Line.TextXAlignment = Enum.TextXAlignment.Left
+    Line.Parent = ConsoleOutput
+    ConsoleOutput.CanvasPosition = Vector2.new(0, 99999)
+end
+
+Log("Delta/AutoExec Mode Loaded.")
+Log("Waiting for Asset Load...")
+
+--------------------------------------------------------------------------------
+-- // [3] SCANNING ALGORITHMS //
+--------------------------------------------------------------------------------
+local function GetCoords(model)
+    if model:IsA("Model") and model.PrimaryPart then return model.PrimaryPart.Position end
+    return Vector3.zero
+end
+
+local function Scan()
+    table.clear(SessionData.Events)
+    SessionData.TargetFound = false
     
-    if s and body and body.data then
-        for _, v in pairs(body.data) do
-            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then table.insert(AllIDs, v.id) end
+    -- Ensure game is loaded
+    if not game:IsLoaded() then game.Loaded:Wait() end
+    
+    Log("Scanning Map Assets...")
+
+    -- [A] Full Moon
+    if Services.Lighting:FindFirstChild("Sky") and string.find(tostring(Services.Lighting.Sky.MoonTextureId), "9709149431") then
+        table.insert(SessionData.Events, {Name = "Full Moon", Pos = nil})
+        Log(">> FOUND: Full Moon")
+    end
+
+    -- [B] Mirage
+    local mirage = Services.Workspace._WorldOrigin.Locations:FindFirstChild("Mirage Island")
+    if mirage then
+        table.insert(SessionData.Events, {Name = "Mirage Island", Pos = GetCoords(mirage)})
+        Log(">> FOUND: Mirage Island")
+        SessionData.TargetFound = true
+    end
+
+    -- [C] Kitsune
+    local kitsune = Services.Workspace._WorldOrigin.Locations:FindFirstChild("Kitsune Island")
+    if kitsune then
+        table.insert(SessionData.Events, {Name = "Kitsune Island", Pos = GetCoords(kitsune)})
+        Log(">> FOUND: Kitsune Island")
+        SessionData.TargetFound = true
+    end
+
+    return SessionData.TargetFound
+end
+
+--------------------------------------------------------------------------------
+-- // [4] DISCORD WEBHOOK HANDLER //
+--------------------------------------------------------------------------------
+local function GenerateTweenScript(pos)
+    if not pos then return "" end
+    return string.format([[
+-- GOLD TWEEN SCRIPT
+local T = game:GetService("TweenService")
+local P = game.Players.LocalPlayer.Character.HumanoidRootPart
+T:Create(P, TweenInfo.new((P.Position - Vector3.new(%d,%d,%d)).Magnitude/300), {CFrame = CFrame.new(%d,%d,%d)}):Play()
+]], pos.X, pos.Y, pos.Z, pos.X, pos.Y, pos.Z)
+end
+
+local function PostWebhook()
+    if Config.Discord.WebhookURL == "" or Config.Discord.WebhookURL:find("YOUR_WEBHOOK") then return end
+    
+    local contentStr = Config.Discord.PingRole
+    local eventNames = {}
+    local tweenBlock = ""
+
+    for _, evt in pairs(SessionData.Events) do
+        table.insert(eventNames, evt.Name)
+        if (evt.Name == "Mirage Island" or evt.Name == "Kitsune Island") and evt.Pos then
+            tweenBlock = GenerateTweenScript(evt.Pos) 
         end
     end
-    
-    if #AllIDs > 0 then
-        TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
-    else
-        Log("No Servers found.", "FAIL")
+
+    local embedData = {
+        title = "👑 LEGENDARY EVENT FOUND: " .. table.concat(eventNames, " + "),
+        color = Config.Discord.EmbedColor,
+        fields = {
+            {name = "🛠 System", value = "Delta Optimized / Stack Scanner", inline = true},
+            {name = "📶 Ping", value = math.floor(LocalPlayer:GetNetworkPing()*1000).."ms", inline = true},
+            {name = "🆔 Job ID", value = "```"..game.JobId.."```", inline = false},
+            {name = "🔗 Join Script", value = string.format("```lua\ngame:GetService('TeleportService'):TeleportToPlaceInstance(%d, '%s', game.Players.LocalPlayer)\n```", game.PlaceId, game.JobId), inline = false}
+        },
+        footer = { text = Config.Discord.FooterText .. " | " .. os.date("%X") }
+    }
+
+    if tweenBlock ~= "" then
+        table.insert(embedData.fields, {name = "✈️ FLY TO ISLAND", value = "```lua\n"..tweenBlock.."\n```", inline = false})
     end
+
+    local payload = Services.Http:JSONEncode({
+        username = Config.Discord.BotName,
+        avatar_url = Config.Discord.BotAvatar,
+        content = contentStr,
+        embeds = {embedData}
+    })
+
+    HttpRequest({
+        Url = Config.Discord.WebhookURL,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = payload
+    })
+    Log("Notification Sent.")
 end
 
--- 7. MAIN LOOP (FLAT & STABLE)
--- This 'while' loop replaces recursion. It clears memory every second.
-task.spawn(function()
-    while task.wait(1.5) do
-        local success, err = pcall(function()
-            UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
+--------------------------------------------------------------------------------
+-- // [5] SERVER HOPPER ENGINE //
+--------------------------------------------------------------------------------
+local function Hop()
+    if not Config.Hopping.Enabled then Log("Hopping Disabled."); return end
+    
+    Log("Searching for Empty Servers...")
+    local cursor = ""
+    
+    local function Find()
+        local url = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100&cursor=%s", game.PlaceId, cursor)
+        local success, res = pcall(function() return Services.Http:JSONDecode(HttpRequest({Url=url, Method="GET"}).Body) end)
+        
+        if success and res.data then
+            if res.nextPageCursor then cursor = res.nextPageCursor end
             
-            -- Friend Check
-            for _, p in pairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p:IsFriendsWith(LocalPlayer.UserId) then
-                    Log("Friend Detected! Ejecting...", "FAIL")
-                    Hop()
-                    return
+            for _, srv in pairs(res.data) do
+                -- Check for valid server (Ascending sort finds 1 player servers first)
+                if srv.playing >= Config.Hopping.MinPlayers and srv.playing <= Config.Hopping.MaxPlayers and srv.id ~= game.JobId then
+                    Log("Target Acquired: " .. srv.playing .. " Players")
+                    
+                    -- NOTE: We do NOT queue teleport here because Delta AutoExec handles it!
+                    Services.Teleport:TeleportToPlaceInstance(game.PlaceId, srv.id, LocalPlayer)
+                    return true
                 end
             end
-
-            local events = RunScans()
-            
-            if #events > 0 then
-                UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
-                Log("Target Acquired!", "SUCCESS")
-                SendWebhook(events)
-                task.wait(4)
-                Hop()
-            else
-                Log("No Targets. Hopping.", "CMD")
-                Hop()
-            end
-        end)
-
-        if not success then
-            Log("Error: " .. tostring(err), "FAIL")
+            if cursor then task.wait(0.5); Find() end
+        else
+            Log("Roblox API Busy. Retrying...")
             task.wait(2)
+            Find()
         end
+    end
+    Find()
+end
+
+--------------------------------------------------------------------------------
+-- // [6] MAIN THREAD //
+--------------------------------------------------------------------------------
+task.spawn(function()
+    task.wait(2) -- Wait for game to fully initialize
+    local found = Scan()
+    
+    if found then
+        Log("!!! TARGET FOUND - STOPPING HOP !!!")
+        PostWebhook()
+    else
+        Log("No Event Detected.")
+        Log("Hopping in " .. Config.Hopping.HopDelay .. "s...")
+        task.wait(Config.Hopping.HopDelay)
+        Hop()
     end
 end)
