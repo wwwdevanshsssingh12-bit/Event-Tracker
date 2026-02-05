@@ -1,8 +1,8 @@
--- [[ 🚀 GOD MODE V18: NUCLEAR FIX 🚀 ]] --
--- [[ REWRITTEN BY DEVANSH | STATUS: STABLE MOBILE/PC ]] --
--- [[ REMOVED: VirtualUser (Crasher) | ADDED: Safe GUI ]] --
+-- [[ 🚀 GOD MODE V19: STACKLESS MOBILE FIX 🚀 ]] --
+-- [[ REWRITTEN BY DEVANSH | STATUS: STABLE ]] --
+-- [[ FIX: Removed Recursion to prevent Stack Overflow ]] --
 
-print(">> ATTEMPTING INJECTION V18... <<")
+print(">> STARTING V19 STACKLESS... <<")
 
 ---------------------------------------------------------------------------------------------------
 -- [1] CONFIGURATION
@@ -14,7 +14,7 @@ local CONFIG = {
     PingRole = "@everyone",
     MinConfidence = 90, 
     HoldConfidence = 75,
-    ScanDelay = 0.5, -- Safe speed
+    ScanDelay = 0.5,
     HoldTime = 5,         
 }
 
@@ -30,35 +30,20 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
--- Simple Anti-AFK (Mobile Safe)
-LocalPlayer.Idled:Connect(function()
-    print("Anti-Idle: Pulse") -- Just print, don't simulate input (Crashes mobile)
-end)
-
 ---------------------------------------------------------------------------------------------------
--- [3] GUI SYSTEM (FAIL-SAFE PARENTING)
+-- [3] GUI SYSTEM (SIMPLE & SAFE)
 ---------------------------------------------------------------------------------------------------
 local State = { EventStack = {}, IsHolding = false, StartTime = os.clock() }
 
--- 1. Try gethui (Best)
--- 2. Try CoreGui (Standard)
--- 3. Try PlayerGui (Fallback)
+-- Force PlayerGui for Mobile Stability
 local function GetGuiParent()
-    local success, parent = pcall(function() return gethui() end)
-    if success and parent then return parent end
-    
-    success, parent = pcall(function() return game:GetService("CoreGui") end)
-    if success and parent then return parent end
-    
     return LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshV18_Nuclear"
+ScreenGui.Name = "DevanshV19_Stackless"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = GetGuiParent()
-
-print(">> GUI PARENTED TO: " .. tostring(ScreenGui.Parent) .. " <<")
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
@@ -97,21 +82,10 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "root@devansh:~/v18"
+Title.Text = "root@devansh:~/v19"
 Title.TextColor3 = Color3.fromRGB(200, 200, 200)
 Title.TextSize = 12
 Title.TextXAlignment = Enum.TextXAlignment.Left
-
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = TopBar
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
-StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
-StatusLabel.Font = Enum.Font.Code
-StatusLabel.Text = "[BOOTING]"
-StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-StatusLabel.TextSize = 11
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 
 -- Console
 local ConsoleArea = Instance.new("ScrollingFrame")
@@ -155,11 +129,6 @@ end)
 -- [4] LOGGING
 ---------------------------------------------------------------------------------------------------
 local LogCount = 0
-
-local function UpdateStatus(text, color)
-    StatusLabel.Text = text
-    StatusLabel.TextColor3 = color
-end
 
 local function Log(text, type)
     LogCount = LogCount + 1
@@ -215,97 +184,72 @@ end
 -- [5] SCANNERS
 ---------------------------------------------------------------------------------------------------
 
--- 🦖 PREHISTORIC
-local function ScanPrehistoric()
-    Log("Scanning Prehistoric...", "CMD")
-    local score = 0; local evidence = {}; local pos = nil
+local function RunScans()
+    local events = {}
+    
+    -- PREHISTORIC
     if SafeCheck(function() return Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland") end) then
-        score = 100
         local m = Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland")
-        pos = m.Position
-        table.insert(evidence, "Ancient Model")
-        Log("Target: Prehistoric Island ✅", "SUCCESS")
+        table.insert(events, {name="💎🦖 PREHISTORIC ISLAND", score=100, reason="Model Found", pos=m.Position})
+        Log("Found: Prehistoric Island", "SUCCESS")
     end
-    if Lighting.FogColor == Color3.fromRGB(40, 60, 40) then score = score + 40; table.insert(evidence, "Primordial Fog") end
-    return {name="💎🦖 PREHISTORIC ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
-end
 
--- 🏝️ MIRAGE
-local function ScanMirage()
-    Log("Scanning Mirage...", "CMD")
-    local score = 0; local evidence = {}; local pos = nil
+    -- MIRAGE
     if SafeCheck(function() return Workspace.Map:FindFirstChild("MysticIsland") end) then
-        score = 100; table.insert(evidence, "Model ID")
-        pos = Workspace.Map.MysticIsland.Position
-        Log("Target: Mystic Island ✅", "SUCCESS")
-    end
-    local cluster = {}
-    for _, p in pairs(Players:GetPlayers()) do
-        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-            local pp = p.Character.HumanoidRootPart.Position
-            if pp.Magnitude > 8000 and pp.Y > 200 then table.insert(cluster, pp) end
+        table.insert(events, {name="💎🏝️ MIRAGE ISLAND", score=100, reason="Model ID", pos=Workspace.Map.MysticIsland.Position})
+        Log("Found: Mirage Island", "SUCCESS")
+    else
+        -- Triangulation
+        local cluster = {}
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local pp = p.Character.HumanoidRootPart.Position
+                if pp.Magnitude > 8000 and pp.Y > 200 then table.insert(cluster, pp) end
+            end
+        end
+        if #cluster >= 3 then
+            local sum = Vector3.zero
+            for _, v in pairs(cluster) do sum = sum + v end
+            table.insert(events, {name="💎🏝️ MIRAGE ISLAND", score=60, reason="Triangulation", pos=sum/#cluster})
+            Log("Found: Mirage (Cluster)", "WARN")
         end
     end
-    if #cluster >= 3 then
-        local sum = Vector3.zero
-        for _, v in pairs(cluster) do sum = sum + v end
-        score = score + 60; table.insert(evidence, "Triangulation")
-        if not pos then pos = sum / #cluster end
-    end
-    return {name="💎🏝️ MIRAGE ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
-end
 
--- 🦊 KITSUNE
-local function ScanKitsune()
-    Log("Scanning Kitsune...", "CMD")
-    local score = 0; local evidence = {}; local pos = nil
+    -- KITSUNE
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "15306698696") end) then
-        score = 100; table.insert(evidence, "Texture ID")
-        Log("Target: Kitsune Texture ✅", "SUCCESS")
+        table.insert(events, {name="💎🦊 KITSUNE SHRINE", score=100, reason="Texture ID", pos=nil})
+        Log("Found: Kitsune Texture", "SUCCESS")
     end
-    if SafeCheck(function() return Workspace.Map:FindFirstChild("KitsuneShrine") end) then
-        score = 100; table.insert(evidence, "Shrine Model")
-        pos = Workspace.Map.KitsuneShrine.Position
-    end
-    return {name="💎🦊 KITSUNE SHRINE", score=score, reason=table.concat(evidence, ", "), pos=pos}
-end
 
--- ❄️ FROZEN
-local function ScanFrozen()
-    Log("Scanning Frozen...", "CMD")
-    if SafeCheck(function() return Workspace.Map:FindFirstChild("FrozenDimension") or Workspace.Map:FindFirstChild("Frozen Island") end) then
-        local p = nil
-        if Workspace.Map:FindFirstChild("FrozenDimension") then p = Workspace.Map.FrozenDimension.Position end
-        Log("Target: Dimension Gate ✅", "SUCCESS")
-        return {name="💎❄️ FROZEN DIMENSION", score=100, reason="Dimension Gate", pos=p}
+    -- FROZEN
+    if SafeCheck(function() return Workspace.Map:FindFirstChild("FrozenDimension") end) then
+        table.insert(events, {name="💎❄️ FROZEN DIMENSION", score=100, reason="Dimension Gate", pos=Workspace.Map.FrozenDimension.Position})
+        Log("Found: Frozen Dimension", "SUCCESS")
     end
-    return {score=0}
-end
 
--- 🌕 MOON
-local function ScanMoon()
-    Log("Scanning Celestial...", "CMD")
-    if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "9709149431") end) then 
-        Log("Target: Full Moon ✅", "SUCCESS")
-        return {name="💎🌕 FULL MOON", score=100, reason="Texture Match", pos=nil}
+    -- MOON
+    if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "9709149431") end) then
+        table.insert(events, {name="💎🌕 FULL MOON", score=100, reason="Texture ID", pos=nil})
+        Log("Found: Full Moon", "SUCCESS")
     end
-    return {score=0}
+
+    return events
 end
 
 ---------------------------------------------------------------------------------------------------
 -- [6] REPORTING
 ---------------------------------------------------------------------------------------------------
-local function SendWebhook()
-    UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
+local function SendWebhook(events)
     local status, color, discordTime, clockTime = GetTimeData()
 
     if status == "EXPIRED" then
-        Log("Event EXPIRED. Aborting.", "FAIL")
+        Log("Event Expired. Skipping Webhook.", "FAIL")
         return 
     end
 
+    Log("Sending Webhook...", "SUCCESS")
     local fields = {}
-    for _, e in pairs(State.EventStack) do
+    for _, e in pairs(events) do
         table.insert(fields, {["name"] = e.name, ["value"] = "**Engine:** " .. e.reason .. "\n**Conf:** " .. e.score .. "%", ["inline"] = false})
     end
     table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = "🟢 ACTIVE\n**Ends:** " .. discordTime .. "\n**Clock:** " .. string.format("%.1f", clockTime), ["inline"] = false})
@@ -316,7 +260,7 @@ local function SendWebhook()
     local joinScript = string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game.Players.LocalPlayer)', game.PlaceId, game.JobId)
     table.insert(fields, {["name"] = "📜 1. JOIN SCRIPT", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
 
-    for _, e in pairs(State.EventStack) do
+    for _, e in pairs(events) do
         if e.pos then
             local islandName = string.gsub(e.name, "💎", "")
             local vec = math.floor(e.pos.X) .. "," .. math.floor(e.pos.Y + 200) .. "," .. math.floor(e.pos.Z)
@@ -340,7 +284,7 @@ Tw:Play(); Tw.Completed:Wait(); B:Destroy()
             ["title"] = "🌟 EVENT DETECTED",
             ["color"] = color,
             ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | Termux V18 Stable"},
+            ["footer"] = {["text"] = "Devansh | Termux V19 Stackless"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -352,9 +296,8 @@ Tw:Play(); Tw.Completed:Wait(); B:Destroy()
     Log("Payload Delivered.", "SUCCESS")
 end
 
-local function Hop()
-    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
-    Log("Initiating Hop Protocol...", "WARN")
+local function TriggerHop()
+    Log("Hopping Server...", "WARN")
     local PlaceID = game.PlaceId
     local AllIDs = {}
     local s, body = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) end)
@@ -363,56 +306,63 @@ local function Hop()
             if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then table.insert(AllIDs, v.id) end
         end
     end
-    if #AllIDs > 0 then TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
-    else task.wait(1); Hop() end
+    if #AllIDs > 0 then
+        TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
+    else
+        Log("No Servers. Retrying...", "FAIL")
+        task.wait(1)
+        TriggerHop()
+    end
 end
 
--- MAIN LOOP (Safe Recursive)
-local function init()
+---------------------------------------------------------------------------------------------------
+-- [7] MAIN LOOP (STACKLESS)
+---------------------------------------------------------------------------------------------------
+task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
-    UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
-    Log("Analyzing Game State...", "CMD")
+    Log("Kernel Loaded.", "CMD")
     task.wait(0.5)
 
-    local results = {}
-    table.insert(results, ScanMirage())
-    task.wait(CONFIG.ScanDelay)
-    table.insert(results, ScanKitsune())
-    task.wait(CONFIG.ScanDelay)
-    table.insert(results, ScanMoon())
-    task.wait(CONFIG.ScanDelay)
-    table.insert(results, ScanFrozen())
-    task.wait(CONFIG.ScanDelay)
-    table.insert(results, ScanPrehistoric())
+    -- STACKLESS LOOP
+    while true do
+        local success, err = pcall(function()
+            -- 1. Friend Check
+            for _, p in pairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p:IsFriendsWith(LocalPlayer.UserId) then
+                    Log("Friend Detected! Ejecting...", "FAIL")
+                    TriggerHop()
+                    return
+                end
+            end
 
-    local highest = 0
-    State.EventStack = {} 
+            -- 2. Scan
+            local events = RunScans()
+            local highestScore = 0
+            for _, e in pairs(events) do
+                if e.score > highestScore then highestScore = e.score end
+            end
 
-    for _, res in pairs(results) do
-        if res.score > highest then highest = res.score end
-        if res.score >= CONFIG.HoldConfidence then table.insert(State.EventStack, res) end
-    end
+            -- 3. Logic
+            if highestScore >= CONFIG.MinConfidence then
+                Log("Target Acquired ("..highestScore.."%)", "SUCCESS")
+                SendWebhook(events)
+                task.wait(3)
+                TriggerHop()
+            elseif highestScore >= CONFIG.HoldConfidence then
+                Log("Unsure ("..highestScore.."%). Holding 5s...", "WARN")
+                task.wait(CONFIG.HoldTime)
+                -- Loop will restart and re-scan automatically
+            else
+                Log("No Targets. Hopping.", "CMD")
+                TriggerHop()
+                return -- Break this pcall to allow hop to process
+            end
+        end)
 
-    if highest >= CONFIG.MinConfidence then
-        UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
-        Log("Targets Acquired.", "SUCCESS")
-        SendWebhook()
-        task.wait(2)
-        Hop()
-    elseif highest >= CONFIG.HoldConfidence then
-        if not State.IsHolding then
-            UpdateStatus("[HOLDING]", Color3.fromRGB(255, 150, 0))
-            Log("Unsure ("..highest.."%). Holding...", "WARN")
-            State.IsHolding = true
-            task.delay(CONFIG.HoldTime, init) -- Safe Delay
-        else
-            Hop()
+        if not success then
+            Log("Crash Handled: " .. tostring(err), "FAIL")
+            task.wait(1)
         end
-    else
-        Log("No Targets. Hopping.", "CMD")
-        Hop()
+        task.wait(0.5)
     end
-end
-
--- LAUNCH
-task.spawn(init)
+end)
