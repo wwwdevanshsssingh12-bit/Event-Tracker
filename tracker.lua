@@ -1,7 +1,8 @@
--- [[ 🚀 GOD MODE V17: INTEGRATED STACK ENGINE 🚀 ]] --
--- [[ REWRITTEN BY DEVANSH | STATUS: FINAL ]] --
+-- [[ 🚀 GOD MODE V18: NUCLEAR FIX 🚀 ]] --
+-- [[ REWRITTEN BY DEVANSH | STATUS: STABLE MOBILE/PC ]] --
+-- [[ REMOVED: VirtualUser (Crasher) | ADDED: Safe GUI ]] --
 
-print(">> INJECTING V17 WITH ADVANCED EMBED ENGINE... <<")
+print(">> ATTEMPTING INJECTION V18... <<")
 
 ---------------------------------------------------------------------------------------------------
 -- [1] CONFIGURATION
@@ -13,7 +14,7 @@ local CONFIG = {
     PingRole = "@everyone",
     MinConfidence = 90, 
     HoldConfidence = 75,
-    ScanDelay = 0.3, 
+    ScanDelay = 0.5, -- Safe speed
     HoldTime = 5,         
 }
 
@@ -29,38 +30,50 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
+-- Simple Anti-AFK (Mobile Safe)
+LocalPlayer.Idled:Connect(function()
+    print("Anti-Idle: Pulse") -- Just print, don't simulate input (Crashes mobile)
+end)
+
 ---------------------------------------------------------------------------------------------------
--- [3] GUI SYSTEM (TERMUX STYLE)
+-- [3] GUI SYSTEM (FAIL-SAFE PARENTING)
 ---------------------------------------------------------------------------------------------------
 local State = { EventStack = {}, IsHolding = false, StartTime = os.clock() }
 
--- Safe GUI Parenting
+-- 1. Try gethui (Best)
+-- 2. Try CoreGui (Standard)
+-- 3. Try PlayerGui (Fallback)
 local function GetGuiParent()
-    local s, p = pcall(function() return gethui() end)
-    if s and p then return p end
-    local s2, p2 = pcall(function() return game:GetService("CoreGui") end)
-    if s2 and p2 then return p2 end
+    local success, parent = pcall(function() return gethui() end)
+    if success and parent then return parent end
+    
+    success, parent = pcall(function() return game:GetService("CoreGui") end)
+    if success and parent then return parent end
+    
     return LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshV17_Final"
+ScreenGui.Name = "DevanshV18_Nuclear"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = GetGuiParent()
+
+print(">> GUI PARENTED TO: " .. tostring(ScreenGui.Parent) .. " <<")
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "Terminal"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-MainFrame.Position = UDim2.new(0.5, -180, 0.5, -120)
-MainFrame.Size = UDim2.new(0, 360, 0, 240)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
+MainFrame.Size = UDim2.new(0, 320, 0, 220)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = true
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.CornerRadius = UDim.new(0, 10)
 UICorner.Parent = MainFrame
 
 local UIStroke = Instance.new("UIStroke")
@@ -71,19 +84,12 @@ UIStroke.Color = Color3.fromRGB(0, 255, 100)
 -- Header
 local TopBar = Instance.new("Frame")
 TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+TopBar.Size = UDim2.new(1, 0, 0, 25)
 TopBar.BorderSizePixel = 0
 local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.CornerRadius = UDim.new(0, 10)
 TopCorner.Parent = TopBar
-
-local FixBar = Instance.new("Frame")
-FixBar.Parent = TopBar
-FixBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-FixBar.Size = UDim2.new(1, 0, 0, 10)
-FixBar.Position = UDim2.new(0, 0, 1, -10)
-FixBar.BorderSizePixel = 0
 
 local Title = Instance.new("TextLabel")
 Title.Parent = TopBar
@@ -91,7 +97,7 @@ Title.BackgroundTransparency = 1
 Title.Position = UDim2.new(0, 10, 0, 0)
 Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Font = Enum.Font.GothamBold
-Title.Text = "root@devansh:~/v17_stack"
+Title.Text = "root@devansh:~/v18"
 Title.TextColor3 = Color3.fromRGB(200, 200, 200)
 Title.TextSize = 12
 Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -102,7 +108,7 @@ StatusLabel.BackgroundTransparency = 1
 StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
 StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
 StatusLabel.Font = Enum.Font.Code
-StatusLabel.Text = "[IDLE]"
+StatusLabel.Text = "[BOOTING]"
 StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
 StatusLabel.TextSize = 11
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -111,9 +117,9 @@ StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 local ConsoleArea = Instance.new("ScrollingFrame")
 ConsoleArea.Parent = MainFrame
 ConsoleArea.BackgroundTransparency = 1
-ConsoleArea.Position = UDim2.new(0, 10, 0, 40)
-ConsoleArea.Size = UDim2.new(1, -20, 1, -60)
-ConsoleArea.ScrollBarThickness = 4
+ConsoleArea.Position = UDim2.new(0, 10, 0, 35)
+ConsoleArea.Size = UDim2.new(1, -20, 1, -55)
+ConsoleArea.ScrollBarThickness = 3
 ConsoleArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 100)
 ConsoleArea.CanvasSize = UDim2.new(0, 0, 0, 0)
 ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -134,11 +140,11 @@ Footer.Text = "made by devansh"
 Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
 Footer.TextSize = 10
 
--- Rainbow Border
+-- Rainbow Border (Safe)
 task.spawn(function()
     local t = 0
     while MainFrame.Parent do
-        t = t + 0.005
+        t = t + 0.01
         local color = Color3.fromHSV(t % 1, 0.9, 1)
         UIStroke.Color = color
         RunService.Heartbeat:Wait()
@@ -146,7 +152,7 @@ task.spawn(function()
 end)
 
 ---------------------------------------------------------------------------------------------------
--- [4] LOGGING ENGINE
+-- [4] LOGGING
 ---------------------------------------------------------------------------------------------------
 local LogCount = 0
 
@@ -176,9 +182,9 @@ local function Log(text, type)
     Line.TextXAlignment = Enum.TextXAlignment.Left
     Line.LayoutOrder = LogCount
     
-    if LogCount > 50 then
+    if LogCount > 40 then
         for _, child in pairs(ConsoleArea:GetChildren()) do
-            if child:IsA("TextLabel") and child.LayoutOrder < (LogCount - 50) then child:Destroy() end
+            if child:IsA("TextLabel") and child.LayoutOrder < (LogCount - 40) then child:Destroy() end
         end
     end
     ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
@@ -206,14 +212,13 @@ local function GetTimeData()
 end
 
 ---------------------------------------------------------------------------------------------------
--- [5] OMNISCIENT SCANNERS
+-- [5] SCANNERS
 ---------------------------------------------------------------------------------------------------
 
--- 🦖 PREHISTORIC SCANNER (PH)
+-- 🦖 PREHISTORIC
 local function ScanPrehistoric()
     Log("Scanning Prehistoric...", "CMD")
     local score = 0; local evidence = {}; local pos = nil
-
     if SafeCheck(function() return Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland") end) then
         score = 100
         local m = Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland")
@@ -221,26 +226,19 @@ local function ScanPrehistoric()
         table.insert(evidence, "Ancient Model")
         Log("Target: Prehistoric Island ✅", "SUCCESS")
     end
-
-    if Lighting.FogColor == Color3.fromRGB(40, 60, 40) then
-        score = score + 40; table.insert(evidence, "Primordial Fog")
-    end
-
+    if Lighting.FogColor == Color3.fromRGB(40, 60, 40) then score = score + 40; table.insert(evidence, "Primordial Fog") end
     return {name="💎🦖 PREHISTORIC ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- 🏝️ MIRAGE SCANNER
+-- 🏝️ MIRAGE
 local function ScanMirage()
     Log("Scanning Mirage...", "CMD")
     local score = 0; local evidence = {}; local pos = nil
-
     if SafeCheck(function() return Workspace.Map:FindFirstChild("MysticIsland") end) then
         score = 100; table.insert(evidence, "Model ID")
         pos = Workspace.Map.MysticIsland.Position
         Log("Target: Mystic Island ✅", "SUCCESS")
     end
-    
-    -- Triangulation
     local cluster = {}
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -254,29 +252,25 @@ local function ScanMirage()
         score = score + 60; table.insert(evidence, "Triangulation")
         if not pos then pos = sum / #cluster end
     end
-
     return {name="💎🏝️ MIRAGE ISLAND", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- 🦊 KITSUNE SCANNER
+-- 🦊 KITSUNE
 local function ScanKitsune()
     Log("Scanning Kitsune...", "CMD")
     local score = 0; local evidence = {}; local pos = nil
-
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "15306698696") end) then
         score = 100; table.insert(evidence, "Texture ID")
         Log("Target: Kitsune Texture ✅", "SUCCESS")
     end
-    
     if SafeCheck(function() return Workspace.Map:FindFirstChild("KitsuneShrine") end) then
         score = 100; table.insert(evidence, "Shrine Model")
         pos = Workspace.Map.KitsuneShrine.Position
     end
-
     return {name="💎🦊 KITSUNE SHRINE", score=score, reason=table.concat(evidence, ", "), pos=pos}
 end
 
--- ❄️ FROZEN SCANNER
+-- ❄️ FROZEN
 local function ScanFrozen()
     Log("Scanning Frozen...", "CMD")
     if SafeCheck(function() return Workspace.Map:FindFirstChild("FrozenDimension") or Workspace.Map:FindFirstChild("Frozen Island") end) then
@@ -288,7 +282,7 @@ local function ScanFrozen()
     return {score=0}
 end
 
--- 🌕 MOON SCANNER
+-- 🌕 MOON
 local function ScanMoon()
     Log("Scanning Celestial...", "CMD")
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "9709149431") end) then 
@@ -299,7 +293,7 @@ local function ScanMoon()
 end
 
 ---------------------------------------------------------------------------------------------------
--- [6] REPORTING ENGINE (INTEGRATED EMBED LOGIC)
+-- [6] REPORTING
 ---------------------------------------------------------------------------------------------------
 local function SendWebhook()
     UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
@@ -311,48 +305,21 @@ local function SendWebhook()
     end
 
     local fields = {}
-    
-    -- 1. STACK SCANNING: LIST ALL EVENTS
     for _, e in pairs(State.EventStack) do
-        table.insert(fields, {
-            ["name"] = e.name, 
-            ["value"] = "**Engine:** " .. e.reason .. "\n**Conf:** " .. e.score .. "%", 
-            ["inline"] = false
-        })
+        table.insert(fields, {["name"] = e.name, ["value"] = "**Engine:** " .. e.reason .. "\n**Conf:** " .. e.score .. "%", ["inline"] = false})
     end
-    
-    -- 2. STATUS & SERVER INFO
-    table.insert(fields, {
-        ["name"] = "⏳ STATUS", 
-        ["value"] = "🟢 ACTIVE\n**Ends:** " .. discordTime .. "\n**Clock:** " .. string.format("%.1f", clockTime), 
-        ["inline"] = false
-    })
+    table.insert(fields, {["name"] = "⏳ STATUS", ["value"] = "🟢 ACTIVE\n**Ends:** " .. discordTime .. "\n**Clock:** " .. string.format("%.1f", clockTime), ["inline"] = false})
 
-    -- 3. STANDARD FIELD: JOB ID
     local directLink = "https://www.roblox.com/games/"..game.PlaceId.."?jobId="..game.JobId
-    table.insert(fields, {
-        ["name"] = "🌍 SERVER INFO",
-        ["value"] = "**Job ID:** `" .. game.JobId .. "`\n**[Click to Direct Join](" .. directLink .. ")**",
-        ["inline"] = false
-    })
+    table.insert(fields, {["name"] = "🌍 SERVER INFO", ["value"] = "**Job ID:** `" .. game.JobId .. "`\n**[Click to Direct Join](" .. directLink .. ")**", ["inline"] = false})
 
-    -- 4. SCRIPT 1: UNIVERSAL JOIN SCRIPT
     local joinScript = string.format('game:GetService("TeleportService"):TeleportToPlaceInstance(%d, "%s", game.Players.LocalPlayer)', game.PlaceId, game.JobId)
-    table.insert(fields, {
-        ["name"] = "📜 SCRIPT 1: JOIN SERVER", 
-        ["value"] = "```lua\n" .. joinScript .. "\n```", 
-        ["inline"] = false
-    })
+    table.insert(fields, {["name"] = "📜 1. JOIN SCRIPT", ["value"] = "```lua\n" .. joinScript .. "\n```", ["inline"] = false})
 
-    -- 5. SCRIPT 2: CONDITIONAL ISLAND LOGIC (Stack Support)
-    -- This loop checks EVERY detected event. If it is a physical island (PH, Frozen, Mirage, etc.),
-    -- it generates a unique Tween Script for it.
     for _, e in pairs(State.EventStack) do
         if e.pos then
-            -- We identify the island by name or just existence of position
-            local islandName = string.gsub(e.name, "💎", "") -- Clean emoji for script comment
+            local islandName = string.gsub(e.name, "💎", "")
             local vec = math.floor(e.pos.X) .. "," .. math.floor(e.pos.Y + 200) .. "," .. math.floor(e.pos.Z)
-            
             local tpScript = string.format([[
 -- [[ TELEPORT TO %s ]] --
 local P = game.Players.LocalPlayer.Character.HumanoidRootPart
@@ -361,25 +328,19 @@ local B = Instance.new("BodyVelocity", P); B.Velocity=Vector3.zero; B.MaxForce=V
 local Tw = game:GetService("TweenService"):Create(P, TweenInfo.new((P.Position-T.Position).Magnitude/350), {CFrame=T})
 Tw:Play(); Tw.Completed:Wait(); B:Destroy()
 ]], islandName, vec)
-            
-            table.insert(fields, {
-                ["name"] = "✈️ SCRIPT 2: TP TO " .. islandName, 
-                ["value"] = "```lua\n" .. tpScript .. "\n```", 
-                ["inline"] = false
-            })
+            table.insert(fields, {["name"] = "✈️ 2. TP TO " .. islandName, ["value"] = "```lua\n" .. tpScript .. "\n```", ["inline"] = false})
         end
     end
 
-    -- 6. SEND PAYLOAD
     local payload = {
         ["username"] = CONFIG.BotName,
         ["avatar_url"] = CONFIG.BotAvatar,
         ["content"] = CONFIG.PingRole,
         ["embeds"] = {{
-            ["title"] = "🌟 EVENT DETECTED (STACK SCAN)",
+            ["title"] = "🌟 EVENT DETECTED",
             ["color"] = color,
             ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | Termux V17 Integrated"},
+            ["footer"] = {["text"] = "Devansh | Termux V18 Stable"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -406,16 +367,13 @@ local function Hop()
     else task.wait(1); Hop() end
 end
 
----------------------------------------------------------------------------------------------------
--- [7] MAIN ORCHESTRATOR
----------------------------------------------------------------------------------------------------
+-- MAIN LOOP (Safe Recursive)
 local function init()
     if not game:IsLoaded() then game.Loaded:Wait() end
     UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
-    Log("Kernel Loaded. Analyzing...", "CMD")
+    Log("Analyzing Game State...", "CMD")
     task.wait(0.5)
 
-    -- Scans
     local results = {}
     table.insert(results, ScanMirage())
     task.wait(CONFIG.ScanDelay)
@@ -437,7 +395,7 @@ local function init()
 
     if highest >= CONFIG.MinConfidence then
         UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
-        Log("Targets Acquired. Reporting...", "SUCCESS")
+        Log("Targets Acquired.", "SUCCESS")
         SendWebhook()
         task.wait(2)
         Hop()
@@ -446,8 +404,7 @@ local function init()
             UpdateStatus("[HOLDING]", Color3.fromRGB(255, 150, 0))
             Log("Unsure ("..highest.."%). Holding...", "WARN")
             State.IsHolding = true
-            task.wait(CONFIG.HoldTime)
-            init()
+            task.delay(CONFIG.HoldTime, init) -- Safe Delay
         else
             Hop()
         end
@@ -457,5 +414,5 @@ local function init()
     end
 end
 
--- Safe Launch
+-- LAUNCH
 task.spawn(init)
