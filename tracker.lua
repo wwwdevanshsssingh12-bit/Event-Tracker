@@ -1,31 +1,32 @@
 --[[
-    DEVANSH EVENT TRACKER | MOVABLE ELITE [v4.5]
-    > MODE: Delta AutoExec (No Loader Needed)
-    > GUI: Draggable / Compact / Curved
-    > ENGINE: Instant Asset Detection
+    DEVANSH EVENT TRACKER | GOD MODE EDITION [v5.0]
+    > GUI: Termux Style / Rainbow Border / Draggable
+    > ENGINE: Instant Asset Detection (Delta Optimized)
+    > STATUS: FIXED & POLISHED
 ]]
 
 --------------------------------------------------------------------------------
--- // [1] USER CONFIGURATION //
+-- // [1] USER CONFIGURATION MATRIX //
 --------------------------------------------------------------------------------
 getgenv().DevanshConfig = {
-    -- [[ DISCORD ]]
-    WebhookURL  = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",  -- <--- PASTE WEBHOOK HERE
+    -- [[ DISCORD INTEGRATION ]]
+    WebhookURL  = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y", -- <--- PASTE WEBHOOK HERE
     
-    -- [[ SETTINGS ]]
-    BotName     = "Evet Tracker",
+    -- [[ BOT IDENTITY ]]
+    BotName     = "Event Tracker",
+    BotAvatar   = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png?ex=6985a369&is=698451e9&hm=af1360b72e9d331403c17f46f80135f7b160fa37890c1b6c31d3535f3fe1f6ea&",
     PingRole    = "@everyone",              -- Pings everyone
     EmbedColor  = 16766720,                 -- Hyper Gold (#FFD700)
     
-    -- [[ HOPPING ]]
+    -- [[ SYSTEM SETTINGS ]]
     HopEnabled  = true,
     HopDelay    = 5.0,     -- Seconds before hopping
-    MinPlayers  = 1,
-    MaxPlayers  = 12
+    MinPlayers  = 1,       -- Minimum players
+    MaxPlayers  = 12       -- Max players (Avoids full servers)
 }
 
 --------------------------------------------------------------------------------
--- // CORE SERVICES //
+-- // [2] CORE SERVICES //
 --------------------------------------------------------------------------------
 local Services = {
     Players = game:GetService("Players"),
@@ -35,244 +36,265 @@ local Services = {
     Lighting = game:GetService("Lighting"),
     Workspace = game:GetService("Workspace"),
     Tween = game:GetService("TweenService"),
-    UserInputService = game:GetService("UserInputService")
+    RunService = game:GetService("RunService")
 }
 
 local LocalPlayer = Services.Players.LocalPlayer
 local HttpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 -- Session State
-local EventsDetected = {}
-local TargetFound = false
+local State = {
+    EventsDetected = {},
+    TargetFound = false,
+    LogCount = 0
+}
 
 --------------------------------------------------------------------------------
--- // [2] DRAGGABLE UI ENGINE //
+-- // [3] ROBUST GUI ENGINE (GOD MODE STYLE) //
 --------------------------------------------------------------------------------
-local ConsoleOutput -- Reference for logging function
+local ConsoleArea -- Reference for logging
+local StatusLabel -- Reference for status text
 
--- Mobile/PC Drag Logic
-local function MakeDraggable(frame)
-    local dragging, dragInput, dragStart, startPos
-    
-    local function update(input)
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-    
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = frame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    frame.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    
-    Services.UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
-        end
-    end)
-end
-
-local function CreateMiniUI()
-    if Services.CoreGui:FindFirstChild("DevanshMiniTracker") then
-        Services.CoreGui.DevanshMiniTracker:Destroy()
+local function CreateGUI()
+    -- Safety Check: Remove old GUI
+    if Services.CoreGui:FindFirstChild("DevanshGodMode") then
+        Services.CoreGui.DevanshGodMode:Destroy()
     end
 
-    local GUI = Instance.new("ScreenGui")
-    GUI.Name = "DevanshMiniTracker"
-    GUI.Parent = Services.CoreGui
-    GUI.ResetOnSpawn = false
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "DevanshGodMode"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = Services.CoreGui
 
-    -- 1. Main Compact Container (Small & Curved)
+    -- 1. Main Terminal Window
     local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 280, 0, 160) -- Very small size
-    MainFrame.Position = UDim2.new(0.5, -140, 0.2, 0) -- Starts Top-Center
-    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    MainFrame.Name = "Terminal"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12) -- Deep Console Dark
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110) -- Centered
+    MainFrame.Size = UDim2.new(0, 320, 0, 220) -- Compact Size
     MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true -- Important for dragging
-    MainFrame.Parent = GUI
-
-    -- Make it Movable
-    MakeDraggable(MainFrame)
+    MainFrame.Active = true
+    MainFrame.Draggable = true -- Native Dragging (Smooth)
 
     -- Curved Corners
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 12)
-    Corner.Parent = MainFrame
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 10)
+    UICorner.Parent = MainFrame
 
-    -- RGB/Gold Glow Border (Curved)
-    local Stroke = Instance.new("UIStroke")
-    Stroke.Thickness = 2.5
-    Stroke.Transparency = 0
-    Stroke.Parent = MainFrame
-    
-    local Gradient = Instance.new("UIGradient")
-    Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 215, 0)), -- Gold
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 100, 0)), -- Orange
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 215, 0)) -- Gold
-    })
-    Gradient.Parent = Stroke
+    -- 2. Rainbow Border (UIStroke)
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Parent = MainFrame
+    UIStroke.Thickness = 2.5
+    UIStroke.Color = Color3.fromRGB(0, 255, 100) -- Start Green
 
-    -- Animate Border
+    -- Rainbow Loop
     task.spawn(function()
-        while GUI.Parent do
-            Gradient.Rotation = Gradient.Rotation + 3
-            task.wait(0.02)
+        local t = 0
+        while MainFrame.Parent do
+            t = t + 0.005
+            UIStroke.Color = Color3.fromHSV(t % 1, 0.9, 1) -- Smooth Rainbow
+            Services.RunService.Heartbeat:Wait()
         end
     end)
 
-    -- 2. Compact Header
-    local Title = Instance.new("TextLabel")
-    Title.Text = getgenv().DevanshConfig.BotName:upper()
-    Title.Font = Enum.Font.GothamBlack
-    Title.TextColor3 = Color3.fromRGB(255, 215, 0)
-    Title.TextSize = 12
-    Title.Size = UDim2.new(1, 0, 0, 25)
-    Title.BackgroundTransparency = 1
-    Title.Parent = MainFrame
-
-    -- 3. The "Smart" Console
-    local ConsoleFrame = Instance.new("Frame")
-    ConsoleFrame.Size = UDim2.new(1, -16, 1, -35)
-    ConsoleFrame.Position = UDim2.new(0, 8, 0, 25)
-    ConsoleFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 5)
-    ConsoleFrame.Parent = MainFrame
+    -- 3. Header Bar
+    local TopBar = Instance.new("Frame")
+    TopBar.Parent = MainFrame
+    TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    TopBar.Size = UDim2.new(1, 0, 0, 30)
+    TopBar.BorderSizePixel = 0
     
-    local ConsoleCorner = Instance.new("UICorner")
-    ConsoleCorner.CornerRadius = UDim.new(0, 8)
-    ConsoleCorner.Parent = ConsoleFrame
+    local TopCorner = Instance.new("UICorner")
+    TopCorner.CornerRadius = UDim.new(0, 10)
+    TopCorner.Parent = TopBar
+    
+    -- Fix Bottom Corners of Header
+    local FixBar = Instance.new("Frame")
+    FixBar.Parent = TopBar
+    FixBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    FixBar.Size = UDim2.new(1, 0, 0, 10)
+    FixBar.Position = UDim2.new(0, 0, 1, -10)
+    FixBar.BorderSizePixel = 0
 
-    local Scroll = Instance.new("ScrollingFrame")
-    Scroll.Size = UDim2.new(1, -10, 1, -10)
-    Scroll.Position = UDim2.new(0, 5, 0, 5)
-    Scroll.BackgroundTransparency = 1
-    Scroll.ScrollBarThickness = 0 -- Hidden scrollbar
-    Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    Scroll.Parent = ConsoleFrame
+    -- Title Text
+    local Title = Instance.new("TextLabel")
+    Title.Parent = TopBar
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 10, 0, 0)
+    Title.Size = UDim2.new(0.6, 0, 1, 0)
+    Title.Font = Enum.Font.Code
+    Title.Text = "EVENT TRACKER"
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 13
+    Title.TextXAlignment = Enum.TextXAlignment.Left
 
-    local List = Instance.new("UIListLayout")
-    List.Padding = UDim.new(0, 2)
-    List.Parent = Scroll
+    -- Status Text (Running/Found)
+    StatusLabel = Instance.new("TextLabel")
+    StatusLabel.Parent = TopBar
+    StatusLabel.BackgroundTransparency = 1
+    StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
+    StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
+    StatusLabel.Font = Enum.Font.GothamBold
+    StatusLabel.Text = "[IDLE]"
+    StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+    StatusLabel.TextSize = 11
+    StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 
-    return Scroll
+    -- 4. Console Area (The Glitch-Free Part)
+    ConsoleArea = Instance.new("ScrollingFrame")
+    ConsoleArea.Parent = MainFrame
+    ConsoleArea.BackgroundTransparency = 1
+    ConsoleArea.Position = UDim2.new(0, 10, 0, 40)
+    ConsoleArea.Size = UDim2.new(1, -20, 1, -60)
+    ConsoleArea.ScrollBarThickness = 2
+    ConsoleArea.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+    ConsoleArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+    local UIListLayout = Instance.new("UIListLayout")
+    UIListLayout.Parent = ConsoleArea
+    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    UIListLayout.Padding = UDim.new(0, 2)
+
+    -- 5. Footer
+    local Footer = Instance.new("TextLabel")
+    Footer.Parent = MainFrame
+    Footer.BackgroundTransparency = 1
+    Footer.Position = UDim2.new(0, 0, 1, -20)
+    Footer.Size = UDim2.new(1, 0, 0, 20)
+    Footer.Font = Enum.Font.Code
+    Footer.Text = "Made by Devansh"
+    Footer.TextColor3 = Color3.fromRGB(100, 100, 100)
+    Footer.TextSize = 10
 end
 
-ConsoleOutput = CreateMiniUI()
+CreateGUI()
 
--- Smart Log Function: Prevents scrolling issues by deleting old logs
-local function Log(text)
-    if not ConsoleOutput then return end
-    
-    -- Add new log
-    local Label = Instance.new("TextLabel")
-    Label.Text = "> " .. text
-    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Label.Font = Enum.Font.Code
-    Label.TextSize = 11
-    Label.Size = UDim2.new(1, 0, 0, 14)
-    Label.BackgroundTransparency = 1
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = ConsoleOutput
+-- Smart Log Function
+local function Log(text, colorType)
+    if not ConsoleArea then return end
+    State.LogCount = State.LogCount + 1
 
-    -- Auto-Cleanup: Keep only last 7 lines
-    local children = ConsoleOutput:GetChildren()
-    if #children > 8 then
-        for i = 1, (#children - 8) do
-            if children[i]:IsA("TextLabel") then children[i]:Destroy() end
+    local color = Color3.fromRGB(200, 200, 200) -- Default White
+    local prefix = "[*]"
+
+    if colorType == "SUCCESS" then 
+        color = Color3.fromRGB(0, 255, 100) -- Green
+        prefix = "[+]"
+    elseif colorType == "WARN" then
+        color = Color3.fromRGB(255, 180, 0) -- Orange
+        prefix = "[!]"
+    elseif colorType == "FAIL" then
+        color = Color3.fromRGB(255, 50, 50) -- Red
+        prefix = "[-]"
+    end
+
+    local Line = Instance.new("TextLabel")
+    Line.Parent = ConsoleArea
+    Line.BackgroundTransparency = 1
+    Line.Size = UDim2.new(1, 0, 0, 14)
+    Line.Font = Enum.Font.Code
+    Line.Text = string.format("%s %s", prefix, text)
+    Line.TextColor3 = color
+    Line.TextSize = 11
+    Line.TextXAlignment = Enum.TextXAlignment.Left
+    Line.LayoutOrder = State.LogCount
+
+    -- Anti-Lag: Keep only last 20 lines
+    local children = ConsoleArea:GetChildren()
+    if #children > 25 then
+        for _, child in pairs(children) do
+            if child:IsA("TextLabel") and child.LayoutOrder < (State.LogCount - 20) then
+                child:Destroy()
+            end
         end
     end
-    
-    -- Auto-Scroll to bottom
-    ConsoleOutput.CanvasPosition = Vector2.new(0, 99999)
+
+    ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
 end
 
-Log("Draggable Sentinel Loaded.")
-Log("Config: Delta AutoExec")
+local function UpdateStatus(text, color)
+    if StatusLabel then
+        StatusLabel.Text = text
+        StatusLabel.TextColor3 = color
+    end
+end
+
+Log("Interface Loaded.", "SUCCESS")
+Log("Config: Delta AutoExec", "WARN")
 
 --------------------------------------------------------------------------------
--- // [3] OPTIMIZED ASSET DETECTION ENGINE //
+-- // [4] ASSET DETECTION ENGINE //
 --------------------------------------------------------------------------------
 local function GetPos(model)
     if model and model.PrimaryPart then return model.PrimaryPart.Position end
-    return Vector3.new(0,100,0)
+    return Vector3.new(0,0,0)
 end
 
 local function ScanWorld()
-    EventsDetected = {}
-    TargetFound = false
-    Log("Scanning Map Assets...")
+    State.EventsDetected = {}
+    State.TargetFound = false
+    UpdateStatus("[SCANNING]", Color3.fromRGB(255, 255, 0))
+    Log("Scanning Workspace Assets...")
 
-    -- LOCATIONS FOLDER (Fastest Check)
     local Locations = Services.Workspace._WorldOrigin.Locations
 
-    -- [1] MIRAGE ISLAND (Model Name Check)
+    -- [1] MIRAGE ISLAND
     if Locations:FindFirstChild("Mirage Island") then
-        table.insert(EventsDetected, {Name = "Mirage Island", Pos = GetPos(Locations["Mirage Island"])})
-        Log(">> FOUND: MIRAGE")
-        TargetFound = true
+        local pos = GetPos(Locations["Mirage Island"])
+        table.insert(State.EventsDetected, {Name = "Mirage Island", Pos = pos})
+        Log("TARGET: Mirage Island", "SUCCESS")
+        State.TargetFound = true
     end
 
-    -- [2] KITSUNE ISLAND (Model Name Check)
+    -- [2] KITSUNE ISLAND
     if Locations:FindFirstChild("Kitsune Island") then
-        table.insert(EventsDetected, {Name = "Kitsune Island", Pos = GetPos(Locations["Kitsune Island"])})
-        Log(">> FOUND: KITSUNE")
-        TargetFound = true
+        local pos = GetPos(Locations["Kitsune Island"])
+        table.insert(State.EventsDetected, {Name = "Kitsune Island", Pos = pos})
+        Log("TARGET: Kitsune Island", "SUCCESS")
+        State.TargetFound = true
     end
 
-    -- [3] FULL MOON (Texture ID Check)
+    -- [3] FULL MOON (Texture Check)
     if Services.Lighting:FindFirstChild("Sky") then
         local moonId = tostring(Services.Lighting.Sky.MoonTextureId)
         if string.find(moonId, "9709149431") then
-            table.insert(EventsDetected, {Name = "Full Moon", Pos = nil})
-            Log(">> FOUND: FULL MOON")
+            table.insert(State.EventsDetected, {Name = "Full Moon", Pos = nil})
+            Log("TARGET: Full Moon", "SUCCESS")
+            -- We don't set TargetFound=true for just Moon (usually), unless you want to stop for it.
         end
     end
-    
-    return TargetFound
+
+    return State.TargetFound
 end
 
 --------------------------------------------------------------------------------
--- // [4] DISCORD WEBHOOK //
+-- // [5] WEBHOOK REPORTER //
 --------------------------------------------------------------------------------
 local function SendAlert()
-    if getgenv().DevanshConfig.WebhookURL == "YOUR_WEBHOOK_URL_HERE" then return end
-    
-    local Config = getgenv().DevanshConfig
+    UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
+    if getgenv().DevanshConfig.WebhookURL:find("YOUR_WEBHOOK") then return end
+
     local desc = ""
     local tweenCode = ""
 
-    for _, evt in pairs(EventsDetected) do
+    for _, evt in pairs(State.EventsDetected) do
         desc = desc .. "• **" .. evt.Name .. "**\n"
         if evt.Pos then
-            -- Auto-Generate Tween Script
             tweenCode = string.format("game.TweenService:Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new(15), {CFrame = CFrame.new(%d,%d,%d)}):Play()", evt.Pos.X, evt.Pos.Y, evt.Pos.Z)
         end
     end
 
     local embed = {
-        title = "👑 RARE EVENT DETECTED!",
+        title = "👑 EVENT SECURED",
         description = desc,
-        color = Config.EmbedColor,
+        color = getgenv().DevanshConfig.EmbedColor,
         fields = {
             {name = "Server Job ID", value = "```"..game.JobId.."```", inline = false},
-            {name = "Direct Join", value = "```lua\ngame:GetService('TeleportService'):TeleportToPlaceInstance("..game.PlaceId..", '"..game.JobId.."', game.Players.LocalPlayer)\n```", inline = false}
+            {name = "Quick Join", value = "```lua\ngame:GetService('TeleportService'):TeleportToPlaceInstance("..game.PlaceId..", '"..game.JobId.."', game.Players.LocalPlayer)\n```", inline = false}
         },
-        footer = {text = "Devansh Mini Sentinel | Delta Exec"}
+        footer = {text = "Devansh Tracker | God Mode v5.0"}
     }
 
     if tweenCode ~= "" then
@@ -280,42 +302,43 @@ local function SendAlert()
     end
 
     local payload = Services.Http:JSONEncode({
-        content = Config.PingRole,
-        username = Config.BotName,
+        content = getgenv().DevanshConfig.PingRole,
+        username = getgenv().DevanshConfig.BotName,
+        avatar_url = getgenv().DevanshConfig.BotAvatar,
         embeds = {embed}
     })
 
     HttpRequest({
-        Url = Config.WebhookURL,
+        Url = getgenv().DevanshConfig.WebhookURL,
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
         Body = payload
     })
-    Log("Webhook Sent!")
+    Log("Webhook Dispatched.", "SUCCESS")
 end
 
 --------------------------------------------------------------------------------
--- // [5] SERVER HOPPER //
+-- // [6] ASCENDING SERVER HOPPER //
 --------------------------------------------------------------------------------
 local function HopServer()
     if not getgenv().DevanshConfig.HopEnabled then return end
-    Log("Finding Empty Server...")
+    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
+    Log("Searching for empty server...", "WARN")
 
     local function TryHop()
-        -- Ascending Sort = Finds servers with 1-2 players first
         local url = "https://games.roblox.com/v1/games/"..game.PlaceId.."/servers/Public?sortOrder=Asc&limit=100"
         local success, response = pcall(function() return Services.Http:JSONDecode(HttpRequest({Url=url, Method="GET"}).Body) end)
         
         if success and response.data then
             for _, srv in pairs(response.data) do
-                if srv.playing >= 1 and srv.playing <= 12 and srv.id ~= game.JobId then
-                    Log("Target: " .. srv.playing .. " Players")
+                if srv.playing >= getgenv().DevanshConfig.MinPlayers and srv.playing <= getgenv().DevanshConfig.MaxPlayers and srv.id ~= game.JobId then
+                    Log("Found: " .. srv.playing .. " Players", "SUCCESS")
                     Services.Teleport:TeleportToPlaceInstance(game.PlaceId, srv.id, LocalPlayer)
                     return
                 end
             end
         end
-        Log("Retrying API...")
+        Log("API Busy. Retrying...", "FAIL")
         task.wait(2)
         TryHop()
     end
@@ -323,19 +346,20 @@ local function HopServer()
 end
 
 --------------------------------------------------------------------------------
--- // MAIN LOOP //
+-- // [7] MAIN EXECUTION LOOP //
 --------------------------------------------------------------------------------
 task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
-    task.wait(1.5) -- Small buffer for map load
+    task.wait(1) 
     
     if ScanWorld() then
-        Log("!!! TARGET SECURED !!!")
+        UpdateStatus("[SECURED]", Color3.fromRGB(0, 255, 0))
+        Log("!!! EVENT DETECTED !!!", "SUCCESS")
         SendAlert()
-        -- Script stops here to let you play
+        -- Script Stops to let you play
     else
-        Log("Nothing found.")
-        Log("Hopping in " .. getgenv().DevanshConfig.HopDelay .. "s")
+        Log("No events found.", "FAIL")
+        Log("Hopping in " .. getgenv().DevanshConfig.HopDelay .. "s", "WARN")
         task.wait(getgenv().DevanshConfig.HopDelay)
         HopServer()
     end
