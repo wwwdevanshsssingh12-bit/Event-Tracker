@@ -1,15 +1,15 @@
--- [[ 🚀 GOD MODE V21: LOOP-ONLY ENGINE 🚀 ]] --
--- [[ REWRITTEN BY DEVANSH | STATUS: STABLE MOBILE ]] --
--- [[ FIX: Removed recursion to prevent Stack Overflow. Uses 'while true do' loops. ]] --
+-- [[ 🚀 GOD MODE V22: LINEAR ENGINE 🚀 ]] --
+-- [[ REWRITTEN BY DEVANSH | STATUS: FINAL FIX ]] --
+-- [[ FIX: Removed ALL recursion in Hopper. Strictly Linear. ]] --
 
-print(">> STARTING V21 LOOP ENGINE... <<")
+print(">> INJECTING V22 LINEAR ENGINE... <<")
 
 ---------------------------------------------------------------------------------------------------
 -- [1] CONFIGURATION
 ---------------------------------------------------------------------------------------------------
 local CONFIG = {
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
-    BotName = "Termux Tracker V21",
+    BotName = "Termux Tracker V22",
     BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png",
     PingRole = "@everyone",
     MinConfidence = 90, 
@@ -19,7 +19,7 @@ local CONFIG = {
 }
 
 ---------------------------------------------------------------------------------------------------
--- [2] SERVICES & SAFETY
+-- [2] SERVICES
 ---------------------------------------------------------------------------------------------------
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
@@ -30,131 +30,124 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
-local function SafeCheck(func)
-    local s, r = pcall(func)
-    if s then return r end
-    return false
-end
-
 ---------------------------------------------------------------------------------------------------
 -- [3] GUI SYSTEM (FAIL-SAFE)
 ---------------------------------------------------------------------------------------------------
-local function CreateGUI()
+-- Try to find a valid parent for the GUI without crashing
+local function GetGuiParent()
     local s, p = pcall(function() return gethui() end)
-    if not s or not p then p = LocalPlayer:WaitForChild("PlayerGui") end
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "DevanshV21_Loop"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.Parent = p
-
-    -- Main Frame
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Name = "Terminal"
-    MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
-    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
-    MainFrame.Size = UDim2.new(0, 320, 0, 220)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = MainFrame
-
-    local UIStroke = Instance.new("UIStroke")
-    UIStroke.Parent = MainFrame
-    UIStroke.Thickness = 2
-    UIStroke.Color = Color3.fromRGB(0, 255, 100)
-
-    -- Header
-    local TopBar = Instance.new("Frame")
-    TopBar.Parent = MainFrame
-    TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-    TopBar.Size = UDim2.new(1, 0, 0, 25)
-    TopBar.BorderSizePixel = 0
-    
-    local Title = Instance.new("TextLabel")
-    Title.Parent = TopBar
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0, 10, 0, 0)
-    Title.Size = UDim2.new(0.6, 0, 1, 0)
-    Title.Font = Enum.Font.GothamBold
-    Title.Text = "root@devansh:~/v21"
-    Title.TextColor3 = Color3.fromRGB(200, 200, 200)
-    Title.TextSize = 12
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-
-    local StatusLabel = Instance.new("TextLabel")
-    StatusLabel.Parent = TopBar
-    StatusLabel.BackgroundTransparency = 1
-    StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
-    StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
-    StatusLabel.Font = Enum.Font.Code
-    StatusLabel.Text = "[BOOTING]"
-    StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-    StatusLabel.TextSize = 11
-    StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
-
-    -- Console
-    local ConsoleArea = Instance.new("ScrollingFrame")
-    ConsoleArea.Parent = MainFrame
-    ConsoleArea.BackgroundTransparency = 1
-    ConsoleArea.Position = UDim2.new(0, 10, 0, 35)
-    ConsoleArea.Size = UDim2.new(1, -20, 1, -55)
-    ConsoleArea.ScrollBarThickness = 2
-    ConsoleArea.CanvasSize = UDim2.new(0, 0, 0, 0)
-    ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-    local UIListLayout = Instance.new("UIListLayout")
-    UIListLayout.Parent = ConsoleArea
-    UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    UIListLayout.Padding = UDim.new(0, 2)
-
-    -- Footer
-    local Footer = Instance.new("TextLabel")
-    Footer.Parent = MainFrame
-    Footer.BackgroundTransparency = 1
-    Footer.Position = UDim2.new(0, 0, 1, -20)
-    Footer.Size = UDim2.new(1, 0, 0, 20)
-    Footer.Font = Enum.Font.Code
-    Footer.Text = "made by devansh"
-    Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
-    Footer.TextSize = 10
-
-    -- Rainbow Border
-    task.spawn(function()
-        local t = 0
-        while MainFrame.Parent do
-            t = t + 0.01
-            local color = Color3.fromHSV(t % 1, 0.9, 1)
-            UIStroke.Color = color
-            RunService.Heartbeat:Wait()
-        end
-    end)
-
-    return StatusLabel, ConsoleArea
+    if s and p then return p end
+    return LocalPlayer:WaitForChild("PlayerGui")
 end
 
-local StatusLabel, ConsoleArea = CreateGUI()
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DevanshV22_Linear"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = GetGuiParent()
+
+-- Main Terminal Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "Terminal"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -110)
+MainFrame.Size = UDim2.new(0, 320, 0, 220)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Parent = MainFrame
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(0, 255, 100)
+
+-- Header Bar
+local TopBar = Instance.new("Frame")
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+TopBar.Size = UDim2.new(1, 0, 0, 25)
+TopBar.BorderSizePixel = 0
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
+
+local Title = Instance.new("TextLabel")
+Title.Parent = TopBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "root@devansh:~/v22"
+Title.TextColor3 = Color3.fromRGB(200, 200, 200)
+Title.TextSize = 12
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Parent = TopBar
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
+StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
+StatusLabel.Font = Enum.Font.Code
+StatusLabel.Text = "[INIT]"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
+StatusLabel.TextSize = 11
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
+
+-- Console Area
+local ConsoleArea = Instance.new("ScrollingFrame")
+ConsoleArea.Parent = MainFrame
+ConsoleArea.BackgroundTransparency = 1
+ConsoleArea.Position = UDim2.new(0, 10, 0, 35)
+ConsoleArea.Size = UDim2.new(1, -20, 1, -55)
+ConsoleArea.ScrollBarThickness = 3
+ConsoleArea.ScrollBarImageColor3 = Color3.fromRGB(0, 255, 100)
+ConsoleArea.CanvasSize = UDim2.new(0, 0, 0, 0)
+ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.Parent = ConsoleArea
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 2)
+
+-- Footer
+local Footer = Instance.new("TextLabel")
+Footer.Parent = MainFrame
+Footer.BackgroundTransparency = 1
+Footer.Position = UDim2.new(0, 0, 1, -20)
+Footer.Size = UDim2.new(1, 0, 0, 20)
+Footer.Font = Enum.Font.Code
+Footer.Text = "made by devansh"
+Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
+Footer.TextSize = 10
+
+-- Rainbow Border Animation
+task.spawn(function()
+    local t = 0
+    while MainFrame.Parent do
+        t = t + 0.01
+        local color = Color3.fromHSV(t % 1, 0.9, 1)
+        UIStroke.Color = color
+        RunService.Heartbeat:Wait()
+    end
+end)
 
 ---------------------------------------------------------------------------------------------------
--- [4] LOGGING ENGINE (NON-RECURSIVE)
+-- [4] LOGGING ENGINE
 ---------------------------------------------------------------------------------------------------
 local LogCount = 0
 
 local function UpdateStatus(text, color)
-    if StatusLabel then
-        StatusLabel.Text = text
-        StatusLabel.TextColor3 = color
-    end
+    StatusLabel.Text = text
+    StatusLabel.TextColor3 = color
 end
 
 local function Log(text, type)
-    if not ConsoleArea then return end
     LogCount = LogCount + 1
-    
     local color = Color3.fromRGB(200, 200, 200)
     local prefix = "[*]"
     
@@ -174,12 +167,19 @@ local function Log(text, type)
     Line.TextXAlignment = Enum.TextXAlignment.Left
     Line.LayoutOrder = LogCount
     
-    if LogCount > 50 then
+    -- Cleanup old logs
+    if LogCount > 40 then
         for _, child in pairs(ConsoleArea:GetChildren()) do
-            if child:IsA("TextLabel") and child.LayoutOrder < (LogCount - 50) then child:Destroy() end
+            if child:IsA("TextLabel") and child.LayoutOrder < (LogCount - 40) then child:Destroy() end
         end
     end
     ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
+end
+
+local function SafeCheck(func)
+    local s, r = pcall(func)
+    if s then return r end
+    return false
 end
 
 local function GetTimeData()
@@ -203,14 +203,14 @@ end
 local function RunScans()
     local events = {}
     
-    -- PREHISTORIC
+    -- 1. PREHISTORIC
     if SafeCheck(function() return Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland") end) then
         local m = Workspace.Map:FindFirstChild("PrehistoricIsland") or Workspace.Map:FindFirstChild("AncientIsland")
         table.insert(events, {name="💎🦖 PREHISTORIC ISLAND", score=100, reason="Model Found", pos=m.Position})
         Log("Found: Prehistoric Island", "SUCCESS")
     end
 
-    -- MIRAGE
+    -- 2. MIRAGE
     if SafeCheck(function() return Workspace.Map:FindFirstChild("MysticIsland") end) then
         table.insert(events, {name="💎🏝️ MIRAGE ISLAND", score=100, reason="Model ID", pos=Workspace.Map.MysticIsland.Position})
         Log("Found: Mirage Island", "SUCCESS")
@@ -231,19 +231,19 @@ local function RunScans()
         end
     end
 
-    -- KITSUNE
+    -- 3. KITSUNE
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "15306698696") end) then
         table.insert(events, {name="💎🦊 KITSUNE SHRINE", score=100, reason="Texture ID", pos=nil})
         Log("Found: Kitsune Texture", "SUCCESS")
     end
 
-    -- FROZEN
+    -- 4. FROZEN
     if SafeCheck(function() return Workspace.Map:FindFirstChild("FrozenDimension") end) then
         table.insert(events, {name="💎❄️ FROZEN DIMENSION", score=100, reason="Dimension Gate", pos=Workspace.Map.FrozenDimension.Position})
         Log("Found: Frozen Dimension", "SUCCESS")
     end
 
-    -- MOON
+    -- 5. MOON
     if SafeCheck(function() return string.find(Lighting.Sky.MoonTextureId, "9709149431") end) then
         table.insert(events, {name="💎🌕 FULL MOON", score=100, reason="Texture ID", pos=nil})
         Log("Found: Full Moon", "SUCCESS")
@@ -253,13 +253,13 @@ local function RunScans()
 end
 
 ---------------------------------------------------------------------------------------------------
--- [6] REPORTING
+-- [6] REPORTING & HOPPING (NON-RECURSIVE)
 ---------------------------------------------------------------------------------------------------
 local function SendWebhook(events)
     local status, color, discordTime, clockTime = GetTimeData()
 
     if status == "EXPIRED" then
-        Log("Event Expired. Skipping Webhook.", "FAIL")
+        Log("Event Expired. Skipping.", "FAIL")
         return 
     end
 
@@ -300,7 +300,7 @@ Tw:Play(); Tw.Completed:Wait(); B:Destroy()
             ["title"] = "🌟 EVENT DETECTED",
             ["color"] = color,
             ["fields"] = fields,
-            ["footer"] = {["text"] = "Devansh | Termux V21 Stable"},
+            ["footer"] = {["text"] = "Devansh | Termux V22 Linear"},
             ["timestamp"] = DateTime.now():ToIsoDate()
         }}
     }
@@ -312,33 +312,40 @@ Tw:Play(); Tw.Completed:Wait(); B:Destroy()
     Log("Payload Delivered.", "SUCCESS")
 end
 
-local function TriggerHop()
+-- LINEAR HOPPER (NO RECURSION)
+local function AttemptHop()
     UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
     Log("Hopping...", "WARN")
     
     local PlaceID = game.PlaceId
     local AllIDs = {}
-    local s, body = pcall(function() return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) end)
+    local success, body = pcall(function() 
+        return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) 
+    end)
     
-    if s and body and body.data then
+    if success and body and body.data then
         for _, v in pairs(body.data) do
-            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then table.insert(AllIDs, v.id) end
+            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then 
+                table.insert(AllIDs, v.id) 
+            end
         end
     end
     
     if #AllIDs > 0 then
-        TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
+        -- Try random server
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
+        end)
     else
-        Log("No Servers. Retrying...", "FAIL")
-        task.wait(2)
-        -- We don't call TriggerHop() again here (Recursion). We just return and let the loop handle it.
+        Log("Server List Error. Retrying in loop.", "FAIL")
     end
+    -- Function ENDS here. It does NOT call itself.
 end
 
 ---------------------------------------------------------------------------------------------------
--- [7] MAIN LOOP (THE FIX)
+-- [7] MAIN LOOP (THE ENGINE)
 ---------------------------------------------------------------------------------------------------
--- We use a 'while true' loop. This DOES NOT stack. It runs forever without memory leaks.
+-- This loop manages everything. It runs forever and cannot overflow the stack.
 task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
     Log("Kernel Loaded.", "CMD")
@@ -346,47 +353,49 @@ task.spawn(function()
 
     while true do
         local success, err = pcall(function()
+            -- 1. Scan Phase
             UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
             
-            -- 1. Friend Check
+            -- Friend Check
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p:IsFriendsWith(LocalPlayer.UserId) then
                     Log("Friend Detected! Ejecting...", "FAIL")
-                    TriggerHop()
-                    return
+                    AttemptHop()
+                    return -- Breaks this iteration, loop continues
                 end
             end
 
-            -- 2. Scan
             local events = RunScans()
             local highestScore = 0
             for _, e in pairs(events) do
                 if e.score > highestScore then highestScore = e.score end
             end
 
-            -- 3. Logic
+            -- 2. Decision Phase
             if highestScore >= CONFIG.MinConfidence then
                 UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
                 Log("Target Acquired ("..highestScore.."%)", "SUCCESS")
                 SendWebhook(events)
-                task.wait(3)
-                TriggerHop()
+                task.wait(3) -- Wait for webhook to send
+                AttemptHop()
+                
             elseif highestScore >= CONFIG.HoldConfidence then
                 UpdateStatus("[HOLDING]", Color3.fromRGB(255, 150, 0))
                 Log("Unsure ("..highestScore.."%). Holding 5s...", "WARN")
                 task.wait(CONFIG.HoldTime)
-                -- Loop restarts naturally
+                -- Loop will restart, effectively "Re-scanning"
+                
             else
                 Log("No Targets. Hopping.", "CMD")
-                TriggerHop()
+                AttemptHop()
             end
         end)
 
         if not success then
-            Log("Error: " .. tostring(err), "FAIL")
-            task.wait(1)
+            Log("Error Caught: " .. tostring(err), "FAIL")
+            task.wait(2) -- Wait before retrying loop
         end
         
-        task.wait(0.5) -- Prevents freezing if loop runs too fast
+        task.wait(1) -- Safety throttle
     end
 end)
