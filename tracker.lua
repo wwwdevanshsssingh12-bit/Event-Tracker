@@ -1,8 +1,8 @@
 --[[
-    DEVANSH EVENT TRACKER | TIMEKEEPER EDITION [v7.5]
-    > ORDER: Custom Professional Layout (Ends In / Game Time)
-    > VISUALS: Animated GIF Support + V17 GUI
-    > LOGIC: Infinite Hop (Scan -> Webhook -> Hop)
+    DEVANSH EVENT TRACKER | FIXED EDITION [v8.0]
+    > GUI: Universal Parent (Fixes "Not Showing" Glitch)
+    > HOP: Strict 10-Player Limit (Never Full)
+    > VISUALS: New Animated GIFs Updated
 ]]
 
 --------------------------------------------------------------------------------
@@ -15,15 +15,15 @@ getgenv().DevanshConfig = {
     
     -- [[ VISUAL IDENTITY ]]
     BotName      = "Event Tracker",
-    -- [SUGGESTION] Use a GIF url here for animation:
-    BotAvatar    = "https://cdn.discordapp.com/attachments/1347568075146268763/1467795854235799593/1769592894071.png?ex=69864c29&is=6984faa9&hm=a86252c41fa06dfc724579272a116b53dcdf8cde685ce845862ae0c7e73757b7&", 
-    -- [NEW] Thumbnail Image (Appears inside the embed):
-    ThumbnailUrl = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401037754389/ezgif-2381261b040e0649.gif?ex=6986f040&is=69859ec0&hm=e52e71a394271a1b77de5a061f4a935bd03327bcc01bf3e8a816281ad673bb29&", 
+    -- [NEW] Animated Avatar:
+    BotAvatar    = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401452994632/ezgif-68d035637d1d997c.gif?ex=6986f040&is=69859ec0&hm=eec50204236c3ae0806639370e7aff9f98a2b8cd7893f33fa08a4bb848473e2f&",
+    -- [NEW] Thumbnail Image:
+    ThumbnailUrl = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401037754389/ezgif-2381261b040e0649.gif?ex=6986f040&is=69859ec0&hm=e52e71a394271a1b77de5a061f4a935bd03327bcc01bf3e8a816281ad673bb29&",
 
-    -- [[ TUNING ]]
-    ScanDelay    = 0.3,    -- Speed of scanning
-    MinPlayers   = 1,      -- For Hopping
-    MaxPlayers   = 12      -- For Hopping
+    -- [[ HOPPING TUNING ]]
+    ScanDelay    = 0.3,    
+    MinPlayers   = 1,      -- Targets empty servers
+    MaxPlayers   = 10      -- STRICT LIMIT: Ignores servers with >10 people
 }
 
 --------------------------------------------------------------------------------
@@ -44,13 +44,12 @@ local LocalPlayer = Services.Players.LocalPlayer
 local HttpRequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 --------------------------------------------------------------------------------
--- // [3] TIMEKEEPER ENGINE (CALCULATES TIME LEFT) //
+-- // [3] TIMEKEEPER ENGINE //
 --------------------------------------------------------------------------------
 local function GetTimeData()
     local Clock = Services.Lighting.ClockTime
     local IsNight = (Clock >= 18 or Clock < 5.5)
     
-    -- Format Game Time (e.g. "18:30")
     local Hours = math.floor(Clock)
     local Mins = math.floor((Clock - Hours) * 60)
     local AM_PM = (Hours >= 12) and "PM" or "AM"
@@ -58,40 +57,32 @@ local function GetTimeData()
     if Hours == 0 then Hours = 12 end
     local FormattedTime = string.format("%02d:%02d %s", Hours, Mins, AM_PM)
 
-    -- Calculate "Ends In" (Real Seconds)
-    -- Blox Fruits: 1 Game Hour = ~50 Real Seconds (Approx)
-    local TargetTime = 0
     local HoursLeft = 0
-    
     if IsNight then
-        -- Night ends at 5.5 (5:30 AM)
-        if Clock >= 18 then 
-            HoursLeft = (24 - Clock) + 5.5
-        else 
-            HoursLeft = 5.5 - Clock
-        end
+        if Clock >= 18 then HoursLeft = (24 - Clock) + 5.5 else HoursLeft = 5.5 - Clock end
     else
-        -- Day ends at 18 (6:00 PM)
-        if Clock < 18 then
-            HoursLeft = 18 - Clock
-        else
-            HoursLeft = 0 -- Should not happen if IsNight logic is right
-        end
+        if Clock < 18 then HoursLeft = 18 - Clock end
     end
     
-    local RealSecondsLeft = HoursLeft * 50 -- Conversion factor
+    local RealSecondsLeft = HoursLeft * 50 
     local DiscordTimestamp = os.time() + math.floor(RealSecondsLeft)
-    
-    return FormattedTime, string.format("<t:%d:R>", DiscordTimestamp) -- <t:X:R> makes it say "in 5 minutes"
+    return FormattedTime, string.format("<t:%d:R>", DiscordTimestamp)
 end
 
 --------------------------------------------------------------------------------
--- // [4] GUI SYSTEM (V17 / NO SCROLL) //
+-- // [4] UNIVERSAL GUI SYSTEM (FIXED) //
 --------------------------------------------------------------------------------
+-- Fix: Try multiple parents to ensure GUI shows up on all executors
+local function GetGuiParent()
+    if gethui then return gethui() end
+    if pcall(function() return Services.CoreGui end) then return Services.CoreGui end
+    return LocalPlayer:WaitForChild("PlayerGui")
+end
+
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshV17_Fixed"
+ScreenGui.Name = "DevanshTracker_Fixed"
 ScreenGui.ResetOnSpawn = false
-if gethui then ScreenGui.Parent = gethui() else ScreenGui.Parent = Services.CoreGui end
+ScreenGui.Parent = GetGuiParent() -- Uses the fixer function
 
 -- Main Terminal Window
 local MainFrame = Instance.new("Frame")
@@ -103,6 +94,7 @@ MainFrame.Size = UDim2.new(0, 360, 0, 240)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.ZIndex = 100 -- Force on top
 
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 12)
@@ -154,7 +146,7 @@ StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
 StatusLabel.TextSize = 11
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
 
--- Console (No Scroll)
+-- Console (Fixed Layout)
 local ConsoleArea = Instance.new("ScrollingFrame")
 ConsoleArea.Parent = MainFrame
 ConsoleArea.BackgroundTransparency = 1
@@ -163,6 +155,7 @@ ConsoleArea.Size = UDim2.new(1, -20, 1, -60)
 ConsoleArea.ScrollBarThickness = 0 
 ConsoleArea.ScrollingEnabled = false
 ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ConsoleArea.ClipsDescendants = true -- Ensures text doesn't overflow
 
 -- Footer
 local Footer = Instance.new("TextLabel")
@@ -191,7 +184,7 @@ task.spawn(function()
     end
 end)
 
--- Logging (Auto-Fit)
+-- Logging (Auto-Fit Fixed)
 local LogCount = 0
 local function UpdateStatus(text, color)
     StatusLabel.Text = text
@@ -219,8 +212,8 @@ local function Log(text, type)
     Line.TextXAlignment = Enum.TextXAlignment.Left
     Line.LayoutOrder = LogCount
     
-    -- Auto-Fit: Only keep last 12 lines
-    local maxLines = 12
+    -- Auto-Fit: Only keep last 10 lines to ensure visibility
+    local maxLines = 10
     local children = ConsoleArea:GetChildren()
     local textLabels = {}
     for _, c in pairs(children) do if c:IsA("TextLabel") then table.insert(textLabels, c) end end
@@ -231,7 +224,6 @@ local function Log(text, type)
             textLabels[i]:Destroy()
         end
     end
-    ConsoleArea.CanvasPosition = Vector2.new(0, 99999)
 end
 
 --------------------------------------------------------------------------------
@@ -344,7 +336,7 @@ local function ScanMoon()
 end
 
 --------------------------------------------------------------------------------
--- // [6] PROFESSIONAL WEBHOOK HANDLER (EXACT ORDER) //
+-- // [6] PROFESSIONAL WEBHOOK HANDLER //
 --------------------------------------------------------------------------------
 local function SendProfessionalWebhook(events)
     UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
@@ -355,54 +347,37 @@ local function SendProfessionalWebhook(events)
     local tweenCode = ""
     local GameTime, EndsIn = GetTimeData()
 
-    -- 1. Gather Event Names & Tween Code
     for _, e in pairs(events) do
         table.insert(eventNames, e.name)
         if e.pos then
-            -- Professional Tween Script Generator
             tweenCode = string.format("game:GetService('TweenService'):Create(game.Players.LocalPlayer.Character.HumanoidRootPart, TweenInfo.new((game.Players.LocalPlayer.Character.HumanoidRootPart.Position - Vector3.new(%d,%d,%d)).Magnitude/350), {CFrame = CFrame.new(%d,%d,%d)}):Play()", e.pos.X, e.pos.Y, e.pos.Z, e.pos.X, e.pos.Y, e.pos.Z)
         end
     end
-
-    -- === STRICT ORDER CONSTRUCTION ===
     
-    -- [Field 1] Event Found (List)
     table.insert(fields, { name = "🏝️ Event Found", value = table.concat(eventNames, ", "), inline = false })
-
-    -- [Field 2] Ends In (Timekeeper)
     table.insert(fields, { name = "⏳ Ends in", value = EndsIn, inline = true })
-
-    -- [Field 3] Game Time (Timekeeper)
     table.insert(fields, { name = "⏰ Game Time", value = GameTime, inline = true })
     
-    -- Spacer for visual separation (Optional, skipping for compactness)
-
-    -- [Field 4] Join Script
     local JoinScript = string.format("game:GetService('TeleportService'):TeleportToPlaceInstance(%d, '%s', game.Players.LocalPlayer)", game.PlaceId, game.JobId)
     table.insert(fields, { name = "📜 Join Script", value = "```lua\n" .. JoinScript .. "\n```", inline = false })
 
-    -- [Field 5] Tween Script (If applicable)
     if tweenCode ~= "" then
         table.insert(fields, { name = "✈️ Tween Script", value = "```lua\n" .. tweenCode .. "\n```", inline = false })
     else
         table.insert(fields, { name = "✈️ Tween Script", value = "*No coordinates available*", inline = false })
     end
 
-    -- [Field 6] Job ID
     table.insert(fields, { name = "🆔 Job ID", value = "```" .. game.JobId .. "```", inline = false })
-
-    -- [Field 7] Direct Join Link
     local DirectLink = string.format("roblox://experiences/start?placeId=%d&gameInstanceId=%s", game.PlaceId, game.JobId)
     table.insert(fields, { name = "🔗 Direct Join Link", value = "[Click to Join](" .. DirectLink .. ")", inline = false })
 
-    -- Build Embed
     local embed = {
         title = "🚨 RARE EVENT DETECTED",
-        color = 16766720, -- Gold
+        color = 16766720,
         fields = fields,
-        thumbnail = { url = Config.ThumbnailUrl }, -- Animated Thumbnail
-        footer = { text = "Devansh Tracker | Professional Timekeeper | v7.5" },
-        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ") -- ISO 8601 Timestamp
+        thumbnail = { url = Config.ThumbnailUrl },
+        footer = { text = "Devansh Tracker | v8.0 Fixed" },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
     local payload = Services.Http:JSONEncode({
@@ -418,26 +393,48 @@ local function SendProfessionalWebhook(events)
         Headers = {["Content-Type"] = "application/json"},
         Body = payload
     })
-    Log("Professional Webhook Sent!", "SUCCESS")
-end
-
-local function Hop()
-    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
-    Log("Initiating Hop Protocol...", "WARN")
-    local PlaceID = game.PlaceId
-    local AllIDs = {}
-    local s, body = pcall(function() return Services.Http:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100")) end)
-    if s and body and body.data then
-        for _, v in pairs(body.data) do
-            if v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then table.insert(AllIDs, v.id) end
-        end
-    end
-    if #AllIDs > 0 then Services.Teleport:TeleportToPlaceInstance(PlaceID, AllIDs[math.random(1, #AllIDs)], LocalPlayer)
-    else task.wait(1); Hop() end
+    Log("Webhook Sent!", "SUCCESS")
 end
 
 --------------------------------------------------------------------------------
--- // [7] MAIN LOGIC //
+-- // [7] SERVER HOPPING (STRICT NO-FULL SERVERS) //
+--------------------------------------------------------------------------------
+local function Hop()
+    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
+    Log("Finding Empty Server (<10)...", "WARN")
+    local PlaceID = game.PlaceId
+    
+    -- API Query: SortAscending (Lowest players first)
+    local function TryHop()
+        local url = "https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"
+        local s, response = pcall(function() return Services.Http:JSONDecode(HttpRequest({Url=url, Method="GET"}).Body) end)
+        
+        local FoundServer = false
+        if s and response and response.data then
+            for _, srv in pairs(response.data) do
+                -- STRICT FILTER: Must be between 1 and 10 players.
+                -- srv.playing < 11 ensures we NEVER join a 12/12 server.
+                if srv.playing and srv.playing >= getgenv().DevanshConfig.MinPlayers and srv.playing <= getgenv().DevanshConfig.MaxPlayers and srv.id ~= game.JobId then
+                    Log("Joining: " .. srv.playing .. " Players", "SUCCESS")
+                    Services.Teleport:TeleportToPlaceInstance(PlaceID, srv.id, LocalPlayer)
+                    FoundServer = true
+                    break
+                end
+            end
+        end
+        
+        if not FoundServer then
+            Log("No low-pop servers. Retrying...", "FAIL")
+            task.wait(1.5)
+            TryHop()
+        end
+    end
+    
+    TryHop()
+end
+
+--------------------------------------------------------------------------------
+-- // [8] MAIN LOGIC //
 --------------------------------------------------------------------------------
 task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
