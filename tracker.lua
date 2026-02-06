@@ -10,12 +10,12 @@ print(">> V28 INJECTED: LOADING CONFIG... <<")
 local USER_CONFIG = {
     -- [[ WEBHOOK SETTINGS ]]
     WebhookURL = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
-    BotName = "Devansh Tracker V28",
-    
+    BotName = "Event Tracker",
+    BotAvatar = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401452994632/ezgif-68d035637d1d997c.gif?ex=6986f040&is=69859ec0&hm=eec50204236c3ae0806639370e7aff9f98a2b8cd7893f33fa08a4bb848473e2f&",
     -- [[ VISUALS ]]
     -- Suggested GIF: A clean radar scan or rotating gold coin. 
     -- Current: A high-quality radar scan gif.
-    ThumbnailURL = "https://media.tenor.com/On7KVX1uKq8AAAAi/loading-loading-gif.gif", 
+    ThumbnailURL = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401037754389/ezgif-2381261b040e0649.gif?ex=6986f040&is=69859ec0&hm=e52e71a394271a1b77de5a061f4a935bd03327bcc01bf3e8a816281ad673bb29&", 
     EmbedColor = 65280, -- Bright Green (Decimal)
     PingRole = "@everyone",
 
