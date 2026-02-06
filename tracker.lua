@@ -1,8 +1,8 @@
 --[[
-    DEVANSH EVENT TRACKER | BULLETPROOF EDITION [v9.0]
-    > GUI: Simple Status Screen (No Glitchy Console)
-    > LOGIC: Infinite Hop + Prehistoric Engine
-    > PARENT: PlayerGui (Fixes 'Not Showing' on Mobile)
+    DEVANSH EVENT TRACKER | PERFECTED EDITION [v10.0]
+    > FIX: Direct Join Link now fully clickable (HTTPS Protocol)
+    > GUI: Bulletproof Simple Status (No Glitches)
+    > LOGIC: Infinite Hop + Strict 10-Player Limit
 ]]
 
 --------------------------------------------------------------------------------
@@ -67,13 +67,14 @@ local function GetTimeData()
 end
 
 --------------------------------------------------------------------------------
--- // [4] SIMPLE GUI SYSTEM (NO CONSOLE) //
+-- // [4] SIMPLE GUI SYSTEM (BULLETPROOF) //
 --------------------------------------------------------------------------------
-local StatusText -- Global reference to update text
+local StatusText -- Global reference
 
 local function CreateSimpleGUI()
-    -- 1. Force Parent to PlayerGui (Most Stable on Mobile)
-    local ParentGroup = LocalPlayer:WaitForChild("PlayerGui")
+    -- 1. Universal Parent Check
+    local ParentGroup = gethui and gethui() or Services.CoreGui
+    if not pcall(function() local x = ParentGroup.Name end) then ParentGroup = LocalPlayer:WaitForChild("PlayerGui") end
     
     -- Cleanup Old
     if ParentGroup:FindFirstChild("DevanshTrackerSimple") then
@@ -88,13 +89,13 @@ local function CreateSimpleGUI()
     -- 2. Main Window (Centered)
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 300, 0, 150) -- Small & Clean
-    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Pivot Center
-    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- Dead Center of Screen
+    MainFrame.Size = UDim2.new(0, 300, 0, 150)
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
-    MainFrame.Draggable = true -- You can still move it
+    MainFrame.Draggable = true 
     MainFrame.Parent = ScreenGui
 
     -- 3. Rainbow Border
@@ -127,14 +128,14 @@ local function CreateSimpleGUI()
     Title.BackgroundTransparency = 1
     Title.Parent = MainFrame
 
-    -- 6. BIG STATUS TEXT (The Fix)
+    -- 6. BIG STATUS TEXT
     StatusText = Instance.new("TextLabel")
     StatusText.Name = "Status"
     StatusText.Text = "INITIALIZING..."
     StatusText.Font = Enum.Font.GothamBold
     StatusText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    StatusText.TextSize = 20 -- Big Text
-    StatusText.Size = UDim2.new(1, 0, 1, -30) -- Fills the rest
+    StatusText.TextSize = 20
+    StatusText.Size = UDim2.new(1, 0, 1, -30)
     StatusText.Position = UDim2.new(0, 0, 0, 30)
     StatusText.BackgroundTransparency = 1
     StatusText.TextWrapped = true
@@ -154,7 +155,6 @@ end
 
 CreateSimpleGUI()
 
--- Function to Change the Big Text
 local function SetStatus(text, color)
     if StatusText then
         StatusText.Text = text
@@ -261,7 +261,7 @@ local function ScanMoon()
 end
 
 --------------------------------------------------------------------------------
--- // [6] WEBHOOK HANDLER //
+-- // [6] WEBHOOK HANDLER (FIXED LINK) //
 --------------------------------------------------------------------------------
 local function SendWebhook(events)
     local Config = getgenv().DevanshConfig
@@ -291,15 +291,17 @@ local function SendWebhook(events)
     end
 
     table.insert(fields, { name = "🆔 Job ID", value = "```" .. game.JobId .. "```", inline = false })
-    local DirectLink = string.format("roblox://experiences/start?placeId=%d&gameInstanceId=%s", game.PlaceId, game.JobId)
-    table.insert(fields, { name = "🔗 Direct Join Link", value = "[Click to Join](" .. DirectLink .. ")", inline = false })
+    
+    -- [[ FIX: UPDATED DIRECT JOIN LINK TO HTTPS ]]
+    local DirectLink = string.format("https://www.roblox.com/games/start?placeId=%d&gameInstanceId=%s", game.PlaceId, game.JobId)
+    table.insert(fields, { name = "🔗 Direct Join Link", value = "[Direct Join 🚀](" .. DirectLink .. ")", inline = false })
 
     local embed = {
         title = "🚨 RARE EVENT DETECTED",
         color = 16766720,
         fields = fields,
         thumbnail = { url = Config.ThumbnailUrl },
-        footer = { text = "Devansh Tracker | v9.0 Bulletproof" },
+        footer = { text = "Devansh Tracker | v10.0 Perfected" },
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
@@ -322,7 +324,7 @@ end
 -- // [7] SERVER HOPPING //
 --------------------------------------------------------------------------------
 local function Hop()
-    SetStatus("HOPPING SERVER...", Color3.fromRGB(255, 100, 100)) -- Red/Orange
+    SetStatus("HOPPING SERVER...", Color3.fromRGB(255, 100, 100))
     
     local PlaceID = game.PlaceId
     local function TryHop()
@@ -362,7 +364,6 @@ task.spawn(function()
     local Config = getgenv().DevanshConfig
     local FoundEvents = {}
 
-    -- Run All Engines
     local engines = {ScanMirage, ScanKitsune, ScanMoon, ScanFrozen, ScanPrehistoric}
     
     for _, scanFunc in pairs(engines) do
@@ -374,12 +375,8 @@ task.spawn(function()
     end
 
     if #FoundEvents > 0 then
-        SetStatus("EVENT FOUND!", Color3.fromRGB(0, 255, 0)) -- Green
-        
-        -- 1. SEND WEBHOOK
+        SetStatus("EVENT FOUND!", Color3.fromRGB(0, 255, 0))
         SendWebhook(FoundEvents)
-        
-        -- 2. FORCE HOP
         task.wait(2)
         Hop()
     else
