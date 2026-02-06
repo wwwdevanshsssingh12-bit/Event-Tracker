@@ -1,29 +1,27 @@
 --[[
-    DEVANSH EVENT TRACKER | FIXED EDITION [v8.0]
-    > GUI: Universal Parent (Fixes "Not Showing" Glitch)
-    > HOP: Strict 10-Player Limit (Never Full)
-    > VISUALS: New Animated GIFs Updated
+    DEVANSH EVENT TRACKER | BULLETPROOF EDITION [v9.0]
+    > GUI: Simple Status Screen (No Glitchy Console)
+    > LOGIC: Infinite Hop + Prehistoric Engine
+    > PARENT: PlayerGui (Fixes 'Not Showing' on Mobile)
 ]]
 
 --------------------------------------------------------------------------------
 -- // [1] USER CONFIGURATION //
 --------------------------------------------------------------------------------
 getgenv().DevanshConfig = {
-    -- [[ DISCORD SETTINGS ]]
+    -- [[ DISCORD ]]
     WebhookURL   = "https://webhook.lewisakura.moe/api/webhooks/1466002688880672839/5yvrOqQQ3V8JnZ8Z-whDl2lPk7h9Gxdg7-b_AqQqEVFpqnQklnhb7iaECTUq0Q5FVJ5Y",
     PingRole     = "@everyone",
     
-    -- [[ VISUAL IDENTITY ]]
+    -- [[ VISUALS ]]
     BotName      = "Event Tracker",
-    -- [NEW] Animated Avatar:
     BotAvatar    = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401452994632/ezgif-68d035637d1d997c.gif?ex=6986f040&is=69859ec0&hm=eec50204236c3ae0806639370e7aff9f98a2b8cd7893f33fa08a4bb848473e2f&",
-    -- [NEW] Thumbnail Image:
     ThumbnailUrl = "https://cdn.discordapp.com/attachments/1347568075146268763/1469240401037754389/ezgif-2381261b040e0649.gif?ex=6986f040&is=69859ec0&hm=e52e71a394271a1b77de5a061f4a935bd03327bcc01bf3e8a816281ad673bb29&",
 
-    -- [[ HOPPING TUNING ]]
+    -- [[ HOPPING ]]
     ScanDelay    = 0.3,    
-    MinPlayers   = 1,      -- Targets empty servers
-    MaxPlayers   = 10      -- STRICT LIMIT: Ignores servers with >10 people
+    MinPlayers   = 1,      
+    MaxPlayers   = 10      -- Strict Limit (<11 Players)
 }
 
 --------------------------------------------------------------------------------
@@ -33,7 +31,6 @@ local Services = {
     Players = game:GetService("Players"),
     Http = game:GetService("HttpService"),
     Teleport = game:GetService("TeleportService"),
-    CoreGui = game:GetService("CoreGui"),
     Lighting = game:GetService("Lighting"),
     Workspace = game:GetService("Workspace"),
     Tween = game:GetService("TweenService"),
@@ -70,159 +67,98 @@ local function GetTimeData()
 end
 
 --------------------------------------------------------------------------------
--- // [4] UNIVERSAL GUI SYSTEM (FIXED) //
+-- // [4] SIMPLE GUI SYSTEM (NO CONSOLE) //
 --------------------------------------------------------------------------------
--- Fix: Try multiple parents to ensure GUI shows up on all executors
-local function GetGuiParent()
-    if gethui then return gethui() end
-    if pcall(function() return Services.CoreGui end) then return Services.CoreGui end
-    return LocalPlayer:WaitForChild("PlayerGui")
-end
+local StatusText -- Global reference to update text
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DevanshTracker_Fixed"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = GetGuiParent() -- Uses the fixer function
-
--- Main Terminal Window
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "Terminal"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-MainFrame.Position = UDim2.new(0.5, -180, 0.5, -120)
-MainFrame.Size = UDim2.new(0, 360, 0, 240)
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.ZIndex = 100 -- Force on top
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Parent = MainFrame
-UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(0, 255, 100)
-
--- Header
-local TopBar = Instance.new("Frame")
-TopBar.Parent = MainFrame
-TopBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-TopBar.Size = UDim2.new(1, 0, 0, 30)
-TopBar.BorderSizePixel = 0
-local TopCorner = Instance.new("UICorner")
-TopCorner.CornerRadius = UDim.new(0, 12)
-TopCorner.Parent = TopBar
-
-local FixBar = Instance.new("Frame")
-FixBar.Parent = TopBar
-FixBar.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-FixBar.Size = UDim2.new(1, 0, 0, 10)
-FixBar.Position = UDim2.new(0, 0, 1, -10)
-FixBar.BorderSizePixel = 0
-
--- Title
-local Title = Instance.new("TextLabel")
-Title.Parent = TopBar
-Title.BackgroundTransparency = 1
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Size = UDim2.new(0.6, 0, 1, 0)
-Title.Font = Enum.Font.GothamBold
-Title.Text = "EVENT TRACKER"
-Title.TextColor3 = Color3.fromRGB(200, 200, 200)
-Title.TextSize = 12
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
--- Status
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = TopBar
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Position = UDim2.new(0.6, 0, 0, 0)
-StatusLabel.Size = UDim2.new(0.4, -10, 1, 0)
-StatusLabel.Font = Enum.Font.Code
-StatusLabel.Text = "[LOADING]"
-StatusLabel.TextColor3 = Color3.fromRGB(255, 200, 0)
-StatusLabel.TextSize = 11
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Right
-
--- Console (Fixed Layout)
-local ConsoleArea = Instance.new("ScrollingFrame")
-ConsoleArea.Parent = MainFrame
-ConsoleArea.BackgroundTransparency = 1
-ConsoleArea.Position = UDim2.new(0, 10, 0, 40)
-ConsoleArea.Size = UDim2.new(1, -20, 1, -60)
-ConsoleArea.ScrollBarThickness = 0 
-ConsoleArea.ScrollingEnabled = false
-ConsoleArea.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ConsoleArea.ClipsDescendants = true -- Ensures text doesn't overflow
-
--- Footer
-local Footer = Instance.new("TextLabel")
-Footer.Parent = MainFrame
-Footer.BackgroundTransparency = 1
-Footer.Position = UDim2.new(0, 0, 1, -20)
-Footer.Size = UDim2.new(1, 0, 0, 20)
-Footer.Font = Enum.Font.Code
-Footer.Text = "made by devansh"
-Footer.TextColor3 = Color3.fromRGB(80, 80, 80)
-Footer.TextSize = 10
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = ConsoleArea
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Padding = UDim.new(0, 2)
-
--- Rainbow Animation
-task.spawn(function()
-    local t = 0
-    while MainFrame.Parent do
-        t = t + 0.005
-        local color = Color3.fromHSV(t % 1, 0.9, 1)
-        UIStroke.Color = color
-        Services.RunService.Heartbeat:Wait()
+local function CreateSimpleGUI()
+    -- 1. Force Parent to PlayerGui (Most Stable on Mobile)
+    local ParentGroup = LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- Cleanup Old
+    if ParentGroup:FindFirstChild("DevanshTrackerSimple") then
+        ParentGroup.DevanshTrackerSimple:Destroy()
     end
-end)
 
--- Logging (Auto-Fit Fixed)
-local LogCount = 0
-local function UpdateStatus(text, color)
-    StatusLabel.Text = text
-    if color then StatusLabel.TextColor3 = color end
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "DevanshTrackerSimple"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.Parent = ParentGroup
+
+    -- 2. Main Window (Centered)
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 300, 0, 150) -- Small & Clean
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Pivot Center
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- Dead Center of Screen
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+    MainFrame.Draggable = true -- You can still move it
+    MainFrame.Parent = ScreenGui
+
+    -- 3. Rainbow Border
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Parent = MainFrame
+    UIStroke.Thickness = 3
+    UIStroke.Color = Color3.fromRGB(0, 255, 100)
+    
+    task.spawn(function()
+        local t = 0
+        while MainFrame.Parent do
+            t = t + 0.01
+            UIStroke.Color = Color3.fromHSV(t % 1, 0.8, 1)
+            Services.RunService.Heartbeat:Wait()
+        end
+    end)
+
+    -- 4. Rounded Corners
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 12)
+    UICorner.Parent = MainFrame
+
+    -- 5. Title Header
+    local Title = Instance.new("TextLabel")
+    Title.Text = "EVENT TRACKER"
+    Title.Font = Enum.Font.GothamBlack
+    Title.TextColor3 = Color3.fromRGB(255, 215, 0) -- Gold
+    Title.TextSize = 14
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.BackgroundTransparency = 1
+    Title.Parent = MainFrame
+
+    -- 6. BIG STATUS TEXT (The Fix)
+    StatusText = Instance.new("TextLabel")
+    StatusText.Name = "Status"
+    StatusText.Text = "INITIALIZING..."
+    StatusText.Font = Enum.Font.GothamBold
+    StatusText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    StatusText.TextSize = 20 -- Big Text
+    StatusText.Size = UDim2.new(1, 0, 1, -30) -- Fills the rest
+    StatusText.Position = UDim2.new(0, 0, 0, 30)
+    StatusText.BackgroundTransparency = 1
+    StatusText.TextWrapped = true
+    StatusText.Parent = MainFrame
+
+    -- 7. Footer
+    local Footer = Instance.new("TextLabel")
+    Footer.Text = "Made by Devansh"
+    Footer.Font = Enum.Font.Code
+    Footer.TextColor3 = Color3.fromRGB(100, 100, 100)
+    Footer.TextSize = 10
+    Footer.Size = UDim2.new(1, 0, 0, 15)
+    Footer.Position = UDim2.new(0, 0, 1, -15)
+    Footer.BackgroundTransparency = 1
+    Footer.Parent = MainFrame
 end
 
-local function Log(text, type)
-    LogCount = LogCount + 1
-    local color = Color3.fromRGB(200, 200, 200)
-    local prefix = "[*]"
-    
-    if type == "SUCCESS" then color = Color3.fromRGB(0, 255, 100); prefix = "[+]"
-    elseif type == "WARN" then color = Color3.fromRGB(255, 180, 0); prefix = "[!]"
-    elseif type == "FAIL" then color = Color3.fromRGB(255, 50, 50); prefix = "[-]"
-    elseif type == "CMD" then color = Color3.fromRGB(0, 200, 255); prefix = "[$]" end
-    
-    local Line = Instance.new("TextLabel")
-    Line.Parent = ConsoleArea
-    Line.BackgroundTransparency = 1
-    Line.Size = UDim2.new(1, 0, 0, 14)
-    Line.Font = Enum.Font.Code
-    Line.Text = string.format("%s %s", prefix, text)
-    Line.TextColor3 = color
-    Line.TextSize = 11
-    Line.TextXAlignment = Enum.TextXAlignment.Left
-    Line.LayoutOrder = LogCount
-    
-    -- Auto-Fit: Only keep last 10 lines to ensure visibility
-    local maxLines = 10
-    local children = ConsoleArea:GetChildren()
-    local textLabels = {}
-    for _, c in pairs(children) do if c:IsA("TextLabel") then table.insert(textLabels, c) end end
-    
-    if #textLabels > maxLines then
-        table.sort(textLabels, function(a,b) return a.LayoutOrder < b.LayoutOrder end)
-        for i = 1, (#textLabels - maxLines) do
-            textLabels[i]:Destroy()
-        end
+CreateSimpleGUI()
+
+-- Function to Change the Big Text
+local function SetStatus(text, color)
+    if StatusText then
+        StatusText.Text = text
+        if color then StatusText.TextColor3 = color end
     end
 end
 
@@ -237,7 +173,6 @@ end
 
 -- [1] PREHISTORIC ISLAND
 local function ScanPrehistoric()
-    Log("Scanning Prehistoric...", "CMD")
     local score = 0
     local evidence = {}
     local pos = nil
@@ -247,7 +182,6 @@ local function ScanPrehistoric()
         local m = Services.Workspace.Map:FindFirstChild("PrehistoricIsland") or Services.Workspace.Map:FindFirstChild("AncientIsland")
         pos = m.Position
         table.insert(evidence, "Ancient Model Found")
-        Log("Target: Ancient Island", "SUCCESS")
     end
 
     if Services.Lighting.FogColor == Color3.fromRGB(40, 60, 40) then
@@ -260,7 +194,6 @@ end
 
 -- [2] MIRAGE ISLAND
 local function ScanMirage()
-    Log("Scanning Mirage...", "CMD")
     local score = 0
     local evidence = {}
     local pos = nil
@@ -269,7 +202,6 @@ local function ScanMirage()
         score = 100
         table.insert(evidence, "Model ID Match")
         pos = Services.Workspace.Map.MysticIsland.Position
-        Log("Target: Mystic Island", "SUCCESS")
     end
     
     local cluster = {}
@@ -285,7 +217,6 @@ local function ScanMirage()
         score = score + 60
         table.insert(evidence, "Triangulation")
         if not pos then pos = sum / #cluster end
-        Log("Player Cluster Detected", "WARN")
     end
 
     return {name="Mirage Island", score=score, reason=table.concat(evidence, ", "), pos=pos}
@@ -293,7 +224,6 @@ end
 
 -- [3] KITSUNE SHRINE
 local function ScanKitsune()
-    Log("Scanning Kitsune...", "CMD")
     local score = 0
     local evidence = {}
     local pos = nil
@@ -301,7 +231,6 @@ local function ScanKitsune()
     if SafeCheck(function() return string.find(Services.Lighting.Sky.MoonTextureId, "15306698696") end) then
         score = 100
         table.insert(evidence, "Texture ID: 15306698696")
-        Log("Target: Kitsune Texture", "SUCCESS")
     end
     
     if SafeCheck(function() return Services.Workspace.Map:FindFirstChild("KitsuneShrine") end) then
@@ -315,11 +244,9 @@ end
 
 -- [4] FROZEN DIMENSION
 local function ScanFrozen()
-    Log("Scanning Frozen...", "CMD")
     if SafeCheck(function() return Services.Workspace.Map:FindFirstChild("FrozenDimension") or Services.Workspace.Map:FindFirstChild("Frozen Island") end) then
         local p = nil
         if Services.Workspace.Map:FindFirstChild("FrozenDimension") then p = Services.Workspace.Map.FrozenDimension.Position end
-        Log("Target: Dimension Gate", "SUCCESS")
         return {name="Frozen Dimension", score=100, reason="Dimension Gate", pos=p}
     end
     return {score=0}
@@ -327,21 +254,17 @@ end
 
 -- [5] FULL MOON
 local function ScanMoon()
-    Log("Scanning Celestial...", "CMD")
     if SafeCheck(function() return string.find(Services.Lighting.Sky.MoonTextureId, "9709149431") end) then 
-        Log("Target: Full Moon", "SUCCESS")
         return {name="Full Moon", score=100, reason="Texture ID: 9709149431", pos=nil}
     end
     return {score=0}
 end
 
 --------------------------------------------------------------------------------
--- // [6] PROFESSIONAL WEBHOOK HANDLER //
+-- // [6] WEBHOOK HANDLER //
 --------------------------------------------------------------------------------
-local function SendProfessionalWebhook(events)
-    UpdateStatus("[REPORTING]", Color3.fromRGB(0, 255, 255))
+local function SendWebhook(events)
     local Config = getgenv().DevanshConfig
-    
     local fields = {}
     local eventNames = {}
     local tweenCode = ""
@@ -376,7 +299,7 @@ local function SendProfessionalWebhook(events)
         color = 16766720,
         fields = fields,
         thumbnail = { url = Config.ThumbnailUrl },
-        footer = { text = "Devansh Tracker | v8.0 Fixed" },
+        footer = { text = "Devansh Tracker | v9.0 Bulletproof" },
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
     }
 
@@ -393,18 +316,15 @@ local function SendProfessionalWebhook(events)
         Headers = {["Content-Type"] = "application/json"},
         Body = payload
     })
-    Log("Webhook Sent!", "SUCCESS")
 end
 
 --------------------------------------------------------------------------------
--- // [7] SERVER HOPPING (STRICT NO-FULL SERVERS) //
+-- // [7] SERVER HOPPING //
 --------------------------------------------------------------------------------
 local function Hop()
-    UpdateStatus("[HOPPING]", Color3.fromRGB(255, 50, 50))
-    Log("Finding Empty Server (<10)...", "WARN")
-    local PlaceID = game.PlaceId
+    SetStatus("HOPPING SERVER...", Color3.fromRGB(255, 100, 100)) -- Red/Orange
     
-    -- API Query: SortAscending (Lowest players first)
+    local PlaceID = game.PlaceId
     local function TryHop()
         local url = "https://games.roblox.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Asc&limit=100"
         local s, response = pcall(function() return Services.Http:JSONDecode(HttpRequest({Url=url, Method="GET"}).Body) end)
@@ -412,10 +332,8 @@ local function Hop()
         local FoundServer = false
         if s and response and response.data then
             for _, srv in pairs(response.data) do
-                -- STRICT FILTER: Must be between 1 and 10 players.
-                -- srv.playing < 11 ensures we NEVER join a 12/12 server.
                 if srv.playing and srv.playing >= getgenv().DevanshConfig.MinPlayers and srv.playing <= getgenv().DevanshConfig.MaxPlayers and srv.id ~= game.JobId then
-                    Log("Joining: " .. srv.playing .. " Players", "SUCCESS")
+                    SetStatus("JOINING: " .. srv.playing .. " PLRS", Color3.fromRGB(0, 255, 0))
                     Services.Teleport:TeleportToPlaceInstance(PlaceID, srv.id, LocalPlayer)
                     FoundServer = true
                     break
@@ -424,12 +342,11 @@ local function Hop()
         end
         
         if not FoundServer then
-            Log("No low-pop servers. Retrying...", "FAIL")
+            SetStatus("RETRYING API...", Color3.fromRGB(255, 255, 0))
             task.wait(1.5)
             TryHop()
         end
     end
-    
     TryHop()
 end
 
@@ -440,7 +357,8 @@ task.spawn(function()
     if not game:IsLoaded() then game.Loaded:Wait() end
     task.wait(1)
     
-    UpdateStatus("[SCANNING]", Color3.fromRGB(255, 200, 0))
+    SetStatus("SCANNING...", Color3.fromRGB(255, 255, 255))
+    
     local Config = getgenv().DevanshConfig
     local FoundEvents = {}
 
@@ -456,19 +374,17 @@ task.spawn(function()
     end
 
     if #FoundEvents > 0 then
-        UpdateStatus("[FOUND!]", Color3.fromRGB(0, 255, 0))
-        Log("!!! EVENT DETECTED !!!", "SUCCESS")
+        SetStatus("EVENT FOUND!", Color3.fromRGB(0, 255, 0)) -- Green
         
         -- 1. SEND WEBHOOK
-        SendProfessionalWebhook(FoundEvents)
+        SendWebhook(FoundEvents)
         
-        -- 2. FORCE HOP (INFINITE MODE)
-        Log("Continuing to Hop...", "WARN")
+        -- 2. FORCE HOP
         task.wait(2)
         Hop()
     else
-        Log("No events. Hopping...", "FAIL")
-        task.wait(2)
+        SetStatus("NO EVENT", Color3.fromRGB(200, 200, 200))
+        task.wait(1)
         Hop()
     end
 end)
