@@ -15,7 +15,7 @@ getgenv().DevanshConfig = {
     
     -- [[ AUTOMATION ]]
     -- PASTE THE RAW LINK OF THIS SCRIPT HERE FOR CONTINUOUS HOPPING
-    AutoScript   = "https://raw.githubusercontent.com/YourUser/YourRepo/main/tracker.lua", 
+    AutoScript   = "https://raw.githubusercontent.com/wwwdevanshsssingh12-bit/Event-Tracker/refs/heads/main/tracker.lua", 
     
     -- [[ VISUALS ]]
     BotName      = "Devansh Tracker [OP]",
