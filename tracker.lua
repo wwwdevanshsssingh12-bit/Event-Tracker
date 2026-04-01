@@ -1,7 +1,7 @@
 --[[
-    DEVANSH EVENT TRACKER | PRODUCTION GRADE [v14.1 - STABLE]
+    DEVANSH EVENT TRACKER | PRODUCTION GRADE [v14.2 - ANTI-773]
     > ARCHITECT: Gem (AI)
-    > MODULES: ESP + ELITES + BOSSES + EVENTS + SAFE-HOP
+    > MODULES: ESP + ELITES + BOSSES + EVENTS + DEEP-HOP
     > STATUS: UNDETECTED | ROBUST
 ]]
 
@@ -39,7 +39,8 @@ local Services = {
     Workspace    = game:GetService("Workspace"),
     Tween        = game:GetService("TweenService"),
     RunService   = game:GetService("RunService"),
-    CoreGui      = game:GetService("CoreGui")
+    CoreGui      = game:GetService("CoreGui"),
+    GuiService   = game:GetService("GuiService")
 }
 
 local LocalPlayer = Services.Players.LocalPlayer
@@ -143,7 +144,7 @@ local function ScanWorld()
     return detected
 end
 
--- [ENGINE 2] LIGHTING (Texture ID Check)
+-- [ENGINE 2] LIGHTING
 local function ScanLighting()
     local detected = {}
     local Sky = Services.Lighting:FindFirstChildOfClass("Sky")
@@ -300,7 +301,7 @@ local function SendWebhook(events)
             color = 16766720,
             fields = fields,
             thumbnail = {url = Config.ThumbnailUrl},
-            footer = {text = "Devansh Tracker | God Mode v14.1"},
+            footer = {text = "Devansh Tracker | God Mode v14.2"},
             timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
         }}
     }
@@ -314,8 +315,27 @@ local function SendWebhook(events)
 end
 
 --------------------------------------------------------------------------------
--- // [7] SERVER HOP (FAIL-SAFE & RESTRICTED BYPASS) //
+-- // [7] SERVER HOP (ANTI-773 DEEP HOP SYSTEM) //
 --------------------------------------------------------------------------------
+
+-- Auto-dismiss Error 773 / 769 / 772 Prompts natively
+Services.Teleport.TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+    if player == LocalPlayer then
+        UpdateStatus("RESTRICTED SERVER (773) - SKIPPING", Color3.fromRGB(255, 50, 50))
+        Services.GuiService:ClearError()
+    end
+end)
+
+-- Secondary Fallback for specific executor UI setups
+local CoreUI = pcall(function() return Services.CoreGui:FindFirstChild("RobloxPromptGui") end)
+if CoreUI and Services.CoreGui.RobloxPromptGui:FindFirstChild("promptOverlay") then
+    Services.CoreGui.RobloxPromptGui.promptOverlay.ChildAdded:Connect(function(child)
+        if child.Name == 'ErrorPrompt' then
+            Services.GuiService:ClearError()
+        end
+    end)
+end
+
 local function Hop()
     UpdateStatus("HOPPING SERVERS...", Color3.fromRGB(255, 100, 100))
     
@@ -338,13 +358,13 @@ local function Hop()
                     if s.playing and s.playing >= getgenv().DevanshConfig.MinPlayers and s.playing <= getgenv().DevanshConfig.MaxPlayers and s.id ~= game.JobId then
                         UpdateStatus("JOINING: " .. s.playing .. " PLRS", Color3.fromRGB(0, 255, 0))
                         
-                        local tpSuccess, tpError = pcall(function()
+                        -- Execute TP. If it fails, the listeners above will instantly clear the error
+                        -- and allow this loop to proceed to the next server without locking up.
+                        pcall(function()
                             Services.Teleport:TeleportToPlaceInstance(game.PlaceId, s.id, LocalPlayer)
                         end)
                         
-                        if tpSuccess then
-                            task.wait(5)
-                        end
+                        task.wait(3) -- Shortened yield to allow faster skipping if restricted
                     end
                 end
                 if Body.nextPageCursor then Cursor = Body.nextPageCursor else Cursor = "" end
